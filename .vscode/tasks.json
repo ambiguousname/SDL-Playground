@@ -1,0 +1,11 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Run project",
+			"type": "shell",
+			"command": "./build.cmd",
+			"group":"build"
+		}
+	]
+}
