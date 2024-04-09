@@ -1,5 +1,5 @@
 #include "app.h"
-#include "util.h"
+#include "util/util.h"
 
 App::App(ExitCode& success) {
 	if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {

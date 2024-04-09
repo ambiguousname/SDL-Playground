@@ -1,0 +1,1 @@
+target_sources(SDLPlayground PRIVATE util.cpp controls/controller.cpp PUBLIC util.h events.h macros.h controls/controller.h)
