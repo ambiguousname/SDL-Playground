@@ -26,8 +26,10 @@ struct Event {
 };
 
 template <typename T, typename U = void, typename V = void, typename W = void, typename X = void>
-struct EventListener {
+class EventListener {
+	protected:
 	std::vector<Event<T, U, V, W, X>> listeners;
+	public:
 	void invoke(T arg1, U arg2, V arg3, W arg4, X arg5) {
 		for (auto l: listeners) {
 			l.invoke(arg1, arg2, arg3, arg4, arg5);
@@ -45,8 +47,10 @@ struct Event<__VA_ARGS__> { \
 	void (*callback)(__VA_ARGS__); \
 }; \
 template <EVENT_TEMPLATE_EXPAND(__VA_ARGS__)> \
-struct EventListener<__VA_ARGS__> { \
+class EventListener<__VA_ARGS__> { \
+	protected: \
 	std::vector<Event<__VA_ARGS__>> listeners;\
+	public: \
 	void invoke(CONSTRUCT_ARGS_EXPAND(__VA_ARGS__)) {\
 		for (auto l: listeners) {\
 			l.invoke(CALL_ARGS_EXPAND(__VA_ARGS__));\

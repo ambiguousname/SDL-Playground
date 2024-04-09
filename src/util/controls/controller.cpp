@@ -1,5 +1,18 @@
 #include "controller.h"
-#include "logger.h"
+#include "../logger.h"
+
+void Controller::updateKeyboard(SDL_Event e) {
+	switch (e.type) {
+		case SDL_KEYDOWN:
+
+		break;
+		case SDL_KEYUP:
+		break;
+	}
+}
+
+void Controller::update() {
+}
 
 void Controller::listenForControl(std::string controlName, Event<Control> listener) {
 	if (auto control = controlEvents.find(controlName); control != controlEvents.end()) {
