@@ -8,9 +8,9 @@ enum ExitCode {
 
 class App {
 	SDL_Window* window;
-	SDL_Renderer* renderer;
 
 	public:
+	SDL_Renderer* renderer;
 	App(ExitCode&);
 	~App();
 	ExitCode update(void (*)(App&));

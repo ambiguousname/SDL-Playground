@@ -7,10 +7,8 @@
 
 #define EVENT_TEMPLATE_EXPAND(...) FOR_EACH(_TEMPLATE_EXPAND, _TEMPLATE_EXPAND_STOP, ##__VA_ARGS__)
 
-#define _FULL_EXPAND(arg) arg,
-#define _FULL_EXPAND_STOP(arg) arg
-
-#define EVENT_TEMPLATE_FULL(...) _FOR_EACH_EXPAND_4(_FULL_EXPAND, _FULL_EXPAND_STOP, ##__VA_ARGS__, void, void, void, void)
+// Should be <T, void, void, void, void> for something basic.
+//#define EVENT_TEMPLATE_FULL(...) _FOR_EACH_EXPAND_4(_FULL_EXPAND, _FULL_EXPAND_STOP, ##__VA_ARGS__, void, void, void, void)
 
 #define _CONSTRUCT_ARGS_EXPAND(a) a arg ## a,
 #define _CONSTRUCT_ARGS_STOP(a) a arg ## a
@@ -42,19 +40,19 @@ struct EventListener {
 };
 
 #define EVENT(...) \
-template <EVENT_TEMPLATE_EXPAND(##__VA_ARGS__)> \
-struct Event<EVENT_TEMPLATE_FULL(##__VA_ARGS__)> { \
+template <EVENT_TEMPLATE_EXPAND(__VA_ARGS__)> \
+struct Event<__VA_ARGS__> { \
 	void (*callback)(__VA_ARGS__); \
 }; \
-template <EVENT_TEMPLATE_EXPAND(##__VA_ARGS__)> \
-struct EventListener<EVENT_TEMPLATE_FULL(##__VA_ARGS__)> { \
-	std::vector<Event<##__VA_ARGS__>> listeners;\
-	void invoke(CONSTRUCT_ARGS_EXPAND(##__VA_ARGS__)) {\
+template <EVENT_TEMPLATE_EXPAND(__VA_ARGS__)> \
+struct EventListener<__VA_ARGS__> { \
+	std::vector<Event<__VA_ARGS__>> listeners;\
+	void invoke(CONSTRUCT_ARGS_EXPAND(__VA_ARGS__)) {\
 		for (auto l: listeners) {\
-			l.invoke(CALL_ARGS_EXPAND(##__VA_ARGS__));\
+			l.invoke(CALL_ARGS_EXPAND(__VA_ARGS__));\
 		}\
 	}\
-	void subscribe(Event<##__VA_ARGS__> e) {\
+	void subscribe(Event<__VA_ARGS__> e) {\
 		listeners.push_back(e);\
 	}\
 };
