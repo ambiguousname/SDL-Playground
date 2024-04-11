@@ -1,2 +1,2 @@
 ninja
-bin/SDLPlayground.exe
+bin\SDLPlayground.exe
