@@ -1,5 +1,6 @@
 #pragma once
 #include <SDL.h>
+#include "util/controls/controller.h"
 
 enum ExitCode {
 	SUCCESS,
@@ -11,6 +12,7 @@ class App {
 
 	public:
 	SDL_Renderer* renderer;
+	Controller c;
 	App(ExitCode&);
 	~App();
 	ExitCode update(void (*)(App&));

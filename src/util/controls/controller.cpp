@@ -1,6 +1,14 @@
 #include "controller.h"
 #include "../logger.h"
 
+Controller::Controller() {
+	static bool initialized = false;
+	if (!initialized) {
+		SDL_GameControllerAddMappingsFromFile("gamecontrollerdb.txt");
+		initialized = true;
+	}
+}
+
 void Controller::updateKeyboard(SDL_Event e) {
 	switch (e.type) {
 		case SDL_KEYDOWN:

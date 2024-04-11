@@ -2,6 +2,7 @@
 #include "util/logger.h"
 
 App::App(ExitCode& success) {
+	c = Controller();
 	if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
 		logErr(SDL, "Could not init SDL.");
 		success = SDL_CREATION_FAILED;

@@ -16,4 +16,5 @@ build/
 *.ninja*
 
 # Out:
-*.exe
+bin/
+lib/

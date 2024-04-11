@@ -46,6 +46,7 @@ class Controller {
 	std::map<std::string, EventListener<Control>> controlEvents;
 
 	public:
+	Controller();
 	void update();
 	void updateKeyboard(SDL_Event e);
 	void listenForControl(std::string controlName, Event<Control> listener);
