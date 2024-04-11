@@ -12,7 +12,6 @@ class App {
 
 	public:
 	SDL_Renderer* renderer;
-	Controller c;
 	App(ExitCode&);
 	~App();
 	ExitCode update(void (*)(App&));

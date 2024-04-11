@@ -13,42 +13,45 @@ union ControlData {
 	Vector2 vec;	
 };
 
-/// @brief Our data source
-union ControlDataSource {
-	SDL_GameControllerAxis axis;
-	SDL_GameControllerButton button;
-	SDL_KeyboardEvent key;
-
-	/// @brief If we want to add some custom behavior.
-	char* other;
+enum ControlDataType {
+	BOOL,
+	VECTOR2,
 };
 
-enum ControlType {
-	Axis,
-	Button,
-	Key,
-	MousePos,
-	Other,
-};
-
-class Control {
+struct ControlDataOut {
+	ControlDataType type;
 	ControlData data;
-	ControlType type;
+};
+
+/// @brief A source for `ControlData`. We translate the input we get `ControlData`.
+class ControlSource {
+	public:
+	virtual ControlData pullData(ControlDataType expected_out) = 0;
+};
+
+/// @brief A collection of `ControlSources` so we know when and how to fire.
+class Control {
+	public:
+	void addBinding(Event<ControlDataOut> fire_callback) { fire.subscribe(fire_callback); }
+	void update();
+
+	Control();
 	
 	protected:
-	ControlDataSource source;
+	ControlDataType expected_out;
+	std::vector<ControlSource> sources;
+	EventListener<ControlDataOut> fire;
 };
 
-/// @brief A way to handle multiple input control types.
+/// @brief A way to handle multiple input control types. For abstraction purposes, this represents ONE player and their associated controller scheme.
 class Controller {
 	protected:
-	/// @brief The events we hold for listening.
-	std::map<std::string, EventListener<Control>> controlEvents;
+	/// @brief The controls we hold for listening.
+	std::map<std::string, Control> controls;
 
 	public:
 	Controller();
 	void update();
-	void updateKeyboard(SDL_Event e);
-	void listenForControl(std::string controlName, Event<Control> listener);
-	void bindControl(std::string controlName);
+	void listenForControl(std::string control_name, Event<ControlDataOut> listener);
+	void bindControl(std::string control_name, Control to_bind);
 };
