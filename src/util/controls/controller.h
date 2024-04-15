@@ -6,6 +6,7 @@
 #include <string>
 #include <SDL_gamecontroller.h>
 #include <SDL_events.h>
+#include <memory>
 
 /// @brief Data for `Control` struct.
 union ControlData {
@@ -14,6 +15,7 @@ union ControlData {
 };
 
 enum ControlDataType {
+	NONE,
 	BOOL,
 	VECTOR2,
 };
@@ -26,20 +28,21 @@ struct ControlDataOut {
 /// @brief A source for `ControlData`. We translate the input we get `ControlData`.
 class ControlSource {
 	public:
-	virtual ControlData pullData(ControlDataType expected_out) = 0;
+	virtual ControlDataOut pullData(ControlDataType expected_out) { return ControlDataOut{NONE, false}; }
 };
 
 /// @brief A collection of `ControlSources` so we know when and how to fire.
 class Control {
 	public:
+	void addSource(std::unique_ptr<ControlSource> source) { sources.push_back(std::move(source)); }
 	void addBinding(Event<ControlDataOut> fire_callback) { fire.subscribe(fire_callback); }
 	void update();
 
-	Control();
+	Control(ControlDataType expected_out) { this->expected_out = expected_out; };
 	
 	protected:
 	ControlDataType expected_out;
-	std::vector<ControlSource> sources;
+	std::vector<std::unique_ptr<ControlSource>> sources;
 	EventListener<ControlDataOut> fire;
 };
 
@@ -47,11 +50,11 @@ class Control {
 class Controller {
 	protected:
 	/// @brief The controls we hold for listening.
-	std::map<std::string, Control> controls;
+	std::map<std::string, std::unique_ptr<Control>> controls;
 
 	public:
 	Controller();
 	void update();
 	void listenForControl(std::string control_name, Event<ControlDataOut> listener);
-	void bindControl(std::string control_name, Control to_bind);
+	void bindControl(std::string control_name, std::unique_ptr<Control> to_bind);
 };

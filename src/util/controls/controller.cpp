@@ -2,8 +2,12 @@
 #include "../logger.h"
 
 void Control::update() {
-	for (auto source : sources) {
-		
+	for (auto i = sources.begin(); i != sources.end(); i++) {
+		ControlDataOut source_data = i->get()->pullData(expected_out);
+		if (source_data.type != NONE) {
+			fire.invoke(source_data);
+			break;
+		}
 	}
 }
 
@@ -16,19 +20,19 @@ Controller::Controller() {
 }
 
 void Controller::update() {
-	for (auto control : controls) {
-		control.second.update();
+	for (auto c = controls.begin(); c != controls.end(); c++) {
+		c->second->update();
 	}
 }
 
 void Controller::listenForControl(std::string control_name, Event<ControlDataOut> listener) {
 	if (auto control = controls.find(control_name); control != controls.end()) {
-		control->second.addBinding(listener);
+		control->second->addBinding(listener);
 	} else {
 		logErr(OTHER, "Could not get control " + control_name);
 	}
 }
 
-void Controller::bindControl(std::string control_name, Control to_bind) {
-	controls[control_name] = to_bind;
-} 
+void Controller::bindControl(std::string control_name, std::unique_ptr<Control> to_bind) {
+	controls.insert({control_name, std::move(to_bind)});
+}

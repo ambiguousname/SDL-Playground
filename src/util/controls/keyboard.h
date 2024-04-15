@@ -1,9 +1,11 @@
 #pragma once
 #include "controller.h"
 
-class KeyboardSource : ControlSource {
+/// @brief Source for only one key. `pullData` only returns a value when the key has just been pressed or released.
+class KeySource : public ControlSource {
 	std::string keyName;
+	bool pressedDown = false;
 	public:
-	KeyboardSource(std::string keyName) {this->keyName = keyName;}
-	ControlData pullData(ControlDataType expected_out);
+	KeySource(std::string keyName) {this->keyName = keyName;}
+	ControlDataOut pullData(ControlDataType expected_out) override;
 };

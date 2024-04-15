@@ -53,7 +53,7 @@ class EventListener<__VA_ARGS__> { \
 	public: \
 	void invoke(CONSTRUCT_ARGS_EXPAND(__VA_ARGS__)) {\
 		for (auto l: listeners) {\
-			l.invoke(CALL_ARGS_EXPAND(__VA_ARGS__));\
+			(*l.callback)(CALL_ARGS_EXPAND(__VA_ARGS__));\
 		}\
 	}\
 	void subscribe(Event<__VA_ARGS__> e) {\

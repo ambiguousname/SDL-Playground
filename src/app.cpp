@@ -37,10 +37,8 @@ ExitCode App::update(void (*update)(App&)) {
 				quit = true;
 				break;
 			}
-
-			if (e.type == SDL_KEYDOWN) {
-			}
 		}
+		SDL_PumpEvents();
 		update(*this);
 	}
 	return SUCCESS;

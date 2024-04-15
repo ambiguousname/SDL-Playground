@@ -5,6 +5,7 @@ find_package(SDL2 REQUIRED)
 include_directories(SDLPlayground ${SDL2_INCLUDE_DIRS})
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_BUILD_TYPE Debug)
 
 add_executable(SDLPlayground ${SOURCE})
 add_subdirectory(src)
