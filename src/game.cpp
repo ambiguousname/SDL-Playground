@@ -23,7 +23,8 @@ ExitCode game(App& app) {
 	player = SDL_Rect{10, 10, 10, 10};
 	player_controller = Controller {};
 	const char* keys[4] = {"W", "S", "A", "D"};
-	player_controller.bindControl("move", VECTOR2, 1, KeyVector(keys));
+	const char* arrows[4] = {"Up", "Down", "Left", "Right"};
+	player_controller.bindControl("move", VECTOR2, 2, KeyVector(keys), KeyVector(arrows));
 	move_control = player_controller.getControl("move");
 	return app.update(update);
 }
