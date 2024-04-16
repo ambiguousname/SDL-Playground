@@ -31,7 +31,10 @@ struct ControlDataOut {
 /// We configure this source before passing it off to `Control` to use.
 class ControlSource {
 	public:
-	virtual ControlDataOut pullData() { return ControlDataOut{NONE, false}; }
+	/// @brief Modify `out` based on how we've configured our source. 
+	/// @param out `Control`'s value to change.
+	/// @return Whether or not `out` has been modified.
+	virtual bool pullData(ControlDataOut& out) { return false; }
 };
 
 /// @brief A specific kind of input, determined by `expected_out`. We could say that we're expecting a boolean, or a vector2, or whatever. The main idea is that we're going to configure our sources to produce that result however we want.
@@ -50,7 +53,7 @@ class Control {
 	void update();
 	ControlDataOut getValue() { return value; }
 
-	Control(ControlDataType expected_out) { this->expected_out = expected_out; };
+	Control(ControlDataType expected_out);
 };
 
 /// @brief A way to handle multiple input control types. For abstraction purposes, this represents ONE player and their associated controller scheme.

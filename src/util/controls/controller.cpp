@@ -3,14 +3,26 @@
 #include <stdexcept>
 #include <cstdarg>
 
+// Here's my thoughts:
+// Let's say you have sources set to two analog sticks.
+// You're holding down one stick, but you flick the other.
+// Both should be able to look at the value, and update it if theirs is different. And fire if something changes.
+// That way, we are just handling everything simultaneously.
+// Maybe how conflicts are resolved can also be set by an enumerator or function if we want different behaviors? But this should be fine for now.
 void Control::update() {
 	for (auto i = sources.begin(); i != sources.end(); i++) {
-		ControlDataOut source_data = i->get()->pullData();
-		if (source_data.type == expected_out) {
-			value = source_data;
-			fire.invoke(source_data);
+		bool modified = i->get()->pullData(value);
+		if (modified) {
+			fire.invoke(value);
 			break;
 		}
+	}
+}
+
+Control::Control(ControlDataType expected_out) {
+	this->expected_out = expected_out;
+	if (expected_out == BOOL) { 
+		value = ControlDataOut{BOOL, false};
 	}
 }
 

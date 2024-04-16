@@ -1,14 +1,20 @@
 #include "keyboard.h"
 #include <iostream>
 
-ControlDataOut KeySource::pullData() {
-	bool pressed = SDL_GetKeyboardState(NULL)[SDL_GetScancodeFromName(keyName.c_str())] > 0;
-	if (pressedDown && !pressed) {
-		pressedDown = false;
-		return ControlDataOut{BOOL, ControlData{pressed}};
-	} else if (pressed && !pressedDown) {
-		pressedDown = true;
-		return ControlDataOut {BOOL, ControlData{pressed}};
+bool KeySource::pullData(ControlDataOut& out) {
+	if (out.type != BOOL) {
+		return false;
 	}
-	return ControlDataOut {NONE, false};
+	
+	bool pressed = SDL_GetKeyboardState(NULL)[SDL_GetScancodeFromName(keyName.c_str())] > 0;
+	if (pressedDown && !pressed && out.data.boolean == true) {
+		pressedDown = false;
+		out = ControlDataOut{BOOL, ControlData{pressed}};
+		return true;
+	} else if (pressed && !pressedDown && out.data.boolean == false) {
+		pressedDown = true;
+		out = ControlDataOut {BOOL, ControlData{pressed}};
+		return true;
+	}
+	return false;
 }

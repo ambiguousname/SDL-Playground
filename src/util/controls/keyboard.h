@@ -9,5 +9,5 @@ class KeySource : public ControlSource {
 	public:
 	bool isPressed() { return pressedDown; }
 	KeySource(std::string keyName) {this->keyName = keyName;}
-	ControlDataOut pullData() override;
+	bool pullData(ControlDataOut& out) override;
 };
