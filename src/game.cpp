@@ -22,13 +22,8 @@ void update(App& app) {
 ExitCode game(App& app) {
 	player = SDL_Rect{10, 10, 10, 10};
 	player_controller = Controller {};
-	// TODO: Move this into controller functions.
-	shared_ptr<Control> upS = make_shared<Control>(BOOL);
-	upS->addSource(make_unique<KeySource>("W"));
-	upS->addSource(make_unique<KeySource>("Up"));
-	player_controller.bindControl("up", move(upS));
+	player_controller.bindControl("up", BOOL, 2, KeySource("W"), KeySource("Up"));
 	// player_controller.listenForControl("up", Event<ControlDataOut>{upPress});
-
 	up = player_controller.getControl("up");
 	return app.update(update);
 }

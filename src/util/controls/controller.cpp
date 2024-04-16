@@ -1,6 +1,7 @@
 #include "controller.h"
 #include "../logger.h"
 #include <stdexcept>
+#include <cstdarg>
 
 void Control::update() {
 	for (auto i = sources.begin(); i != sources.end(); i++) {
@@ -33,6 +34,20 @@ void Controller::listenForControl(std::string control_name, Event<ControlDataOut
 	} else {
 		logErr(OTHER, "Could not get control " + control_name);
 	}
+}
+
+void Controller::bindControl(std::string control_name, ControlDataType expected_out, int sources_count, ...) {
+	std::shared_ptr<Control> c = std::make_shared<Control>(expected_out);
+
+	std::va_list args;
+	va_start(args, sources_count);
+	for (int i = 0; i < sources_count; i++) {
+		// Grab it by reference rather than copying the arg, so we keep all the functionality it needs.
+		ControlSource& s = va_arg(args, ControlSource);
+		c->addSource(std::unique_ptr<ControlSource>(&s));
+	}
+
+	controls.insert({control_name, std::move(c)});
 }
 
 void Controller::bindControl(std::string control_name, std::shared_ptr<Control> to_bind) {
