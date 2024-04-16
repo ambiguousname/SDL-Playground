@@ -1,11 +1,17 @@
 #include "game.h"
 #include "util/controls/keyboard.h"
 
+using namespace std;
+
 SDL_Rect player;
 Controller player_controller;
+weak_ptr<Control> up;
 
 void update(App& app) {
 	player_controller.update();
+	if (up.lock()->getValue().data.boolean == true) {
+		player.y += 1;
+	}
 	SDL_SetRenderDrawColor(app.renderer, 0, 0, 0, 0xff);
 	SDL_RenderClear(app.renderer);
 	SDL_SetRenderDrawColor(app.renderer, 0xff, 0, 0, 0xff);
@@ -13,19 +19,16 @@ void update(App& app) {
 	SDL_RenderPresent(app.renderer);
 }
 
-void upPress(ControlDataOut out) {
-	if (out.data.button == true) {
-		player.y += 1;
-	}
-}
-
 ExitCode game(App& app) {
 	player = SDL_Rect{10, 10, 10, 10};
 	player_controller = Controller {};
-	std::unique_ptr<Control> up = std::make_unique<Control>(BOOL);
-	up->addSource(std::make_unique<KeySource>("W"));
-	up->addSource(std::make_unique<KeySource>("Up"));
-	player_controller.bindControl("up", std::move(up));
-	player_controller.listenForControl("up", Event<ControlDataOut>{upPress});
+	// TODO: Move this into controller functions.
+	shared_ptr<Control> upS = make_shared<Control>(BOOL);
+	upS->addSource(make_unique<KeySource>("W"));
+	upS->addSource(make_unique<KeySource>("Up"));
+	player_controller.bindControl("up", move(upS));
+	// player_controller.listenForControl("up", Event<ControlDataOut>{upPress});
+
+	up = player_controller.getControl("up");
 	return app.update(update);
 }
