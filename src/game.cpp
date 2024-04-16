@@ -5,11 +5,11 @@ using namespace std;
 
 SDL_Rect player;
 Controller player_controller;
-weak_ptr<Control> up;
+shared_ptr<Control> up;
 
 void update(App& app) {
 	player_controller.update();
-	if (up.lock()->getValue().data.boolean == true) {
+	if (up->getValue().data.boolean == true) {
 		player.y += 1;
 	}
 	SDL_SetRenderDrawColor(app.renderer, 0, 0, 0, 0xff);

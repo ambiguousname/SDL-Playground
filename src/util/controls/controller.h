@@ -66,5 +66,5 @@ class Controller {
 	void bindControl(std::string control_name, ControlDataType expected_out, int sources_count, ...);
 	// For custom configuration, if you really want to mess with smart pointers:
 	void bindControl(std::string control_name, std::shared_ptr<Control> control);
-	std::weak_ptr<Control> getControl(std::string control_name);
+	std::shared_ptr<Control> getControl(std::string control_name);
 };

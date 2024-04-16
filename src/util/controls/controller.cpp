@@ -54,9 +54,9 @@ void Controller::bindControl(std::string control_name, std::shared_ptr<Control> 
 	controls.insert({control_name, std::move(to_bind)});
 }
 
-std::weak_ptr<Control> Controller::getControl(std::string control_name) {
+std::shared_ptr<Control> Controller::getControl(std::string control_name) {
 	if (auto control = controls.find(control_name); control != controls.end()) {
-		return std::weak_ptr<Control>(control->second);
+		return control->second;
 	} else {
 		logErr(OTHER, "Could not get control " + control_name);
 		throw std::domain_error("Could not return control of kind " + control_name);
