@@ -5,17 +5,13 @@ using namespace std;
 
 SDL_Rect player;
 Controller player_controller;
-shared_ptr<Control> up;
-shared_ptr<Control> down;
+shared_ptr<Control> move_control;
 
 void update(App& app) {
 	player_controller.update();
-	if (down->getValue().data.boolean == true) {
-		player.y += 1;
-	}
-	if (up->getValue().data.boolean == true) {
-		player.y -= 1;
-	}
+	Vector2 move_val = move_control->getValue().vec;
+	player.x += move_val.x;
+	player.y += move_val.y;
 	SDL_SetRenderDrawColor(app.renderer, 0, 0, 0, 0xff);
 	SDL_RenderClear(app.renderer);
 	SDL_SetRenderDrawColor(app.renderer, 0xff, 0, 0, 0xff);
@@ -26,10 +22,8 @@ void update(App& app) {
 ExitCode game(App& app) {
 	player = SDL_Rect{10, 10, 10, 10};
 	player_controller = Controller {};
-	player_controller.bindControl("up", BOOL, 2, KeySource("W"), KeySource("Up"));
-	player_controller.bindControl("down", BOOL, 2, KeySource("S"), KeySource("Down"));
-	// player_controller.listenForControl("up", Event<ControlDataOut>{upPress});
-	up = player_controller.getControl("up");
-	down = player_controller.getControl("down");
+	const char* keys[4] = {"W", "S", "A", "D"};
+	player_controller.bindControl("move", VECTOR2, 1, KeyVector(keys));
+	move_control = player_controller.getControl("move");
 	return app.update(update);
 }

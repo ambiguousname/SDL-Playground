@@ -1,18 +1,12 @@
 #pragma once
 
 #include "../events.h"
-#include "../math.h"
+#include "../vec_math.h"
 #include <map>
 #include <string>
 #include <SDL_gamecontroller.h>
 #include <SDL_events.h>
 #include <memory>
-
-/// @brief Data that `ControlSource` returns.
-union ControlData {
-	bool boolean;
-	Vector2 vec;	
-};
 
 /// @brief The type of data we've just returned.
 enum ControlDataType {
@@ -22,9 +16,14 @@ enum ControlDataType {
 	VECTOR2,
 };
 
-struct ControlDataOut {
+struct ControlData {
 	ControlDataType type;
-	ControlData data;
+	union {
+		bool boolean;
+		Vector2 vec;
+	};
+	bool operator==(const ControlData& rhs) const;
+	bool operator!=(const ControlData& rhs) const;
 };
 
 /// @brief A source of control data. This can be a specific key, a controller axis, a button, whatever you can think of.
@@ -34,7 +33,7 @@ class ControlSource {
 	/// @brief Modify `out` based on how we've configured our source. 
 	/// @param out `Control`'s value to change.
 	/// @return Whether or not `out` has been modified.
-	virtual bool pullData(ControlDataOut& out) { return false; }
+	virtual bool pullData(ControlData& out) { return false; }
 };
 
 /// @brief A specific kind of input, determined by `expected_out`. We could say that we're expecting a boolean, or a vector2, or whatever. The main idea is that we're going to configure our sources to produce that result however we want.
@@ -42,16 +41,16 @@ class Control {
 	protected:
 	ControlDataType expected_out;
 	std::vector<std::unique_ptr<ControlSource>> sources;
-	EventListener<ControlDataOut> fire;
-	ControlDataOut value;
-	void addBinding(Event<ControlDataOut> fire_callback) { fire.subscribe(fire_callback); }
+	EventListener<ControlData> fire;
+	ControlData value;
+	void addBinding(Event<ControlData> fire_callback) { fire.subscribe(fire_callback); }
 
 	friend class Controller;
 
 	public:
 	void addSource(std::unique_ptr<ControlSource> source) { sources.push_back(std::move(source)); }
 	void update();
-	ControlDataOut getValue() { return value; }
+	ControlData getValue() { return value; }
 
 	Control(ControlDataType expected_out);
 };
@@ -65,7 +64,7 @@ class Controller {
 	public:
 	Controller();
 	void update();
-	void listenForControl(std::string control_name, Event<ControlDataOut> listener);
+	void listenForControl(std::string control_name, Event<ControlData> listener);
 	void bindControl(std::string control_name, ControlDataType expected_out, int sources_count, ...);
 	// For custom configuration, if you really want to mess with smart pointers:
 	void bindControl(std::string control_name, std::shared_ptr<Control> control);

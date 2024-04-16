@@ -1,20 +1,41 @@
 #include "keyboard.h"
 #include <iostream>
 
-bool KeySource::pullData(ControlDataOut& out) {
+bool KeySource::pullData(ControlData& out) {
 	if (out.type != BOOL) {
 		return false;
 	}
-	
-	bool pressed = SDL_GetKeyboardState(NULL)[SDL_GetScancodeFromName(keyName.c_str())] > 0;
-	if (pressedDown && !pressed && out.data.boolean == true) {
+
+	bool pressed = SDL_GetKeyboardState(NULL)[SDL_GetScancodeFromName(keyName)] > 0;
+	if (pressedDown && !pressed) {
 		pressedDown = false;
-		out = ControlDataOut{BOOL, ControlData{pressed}};
+		out = ControlData{BOOL, pressed};
 		return true;
-	} else if (pressed && !pressedDown && out.data.boolean == false) {
+	} else if (pressed && !pressedDown) {
 		pressedDown = true;
-		out = ControlDataOut {BOOL, ControlData{pressed}};
+		out = ControlData {BOOL, pressed};
 		return true;
 	}
 	return false;
+}
+
+bool KeyVector::pullData(ControlData& out) {
+	if (out.type != VECTOR2) {
+		return false;
+	}
+
+	const Uint8* keyboard = SDL_GetKeyboardState(NULL);
+	out.vec = Vector2(0, 0);
+
+	for (int i = 0; i < 4; i++) {
+		bool pressed = keyboard[SDL_GetScancodeFromName(keys[i])] > 0;
+		int neg = (i % 2 == 0) ? -1 : 1;
+		if (i <= 1) {
+			out.vec.y += neg * (pressed ? 1 : 0);
+		} else {
+			out.vec.x += neg * (pressed ? 1 : 0);
+		}
+	}
+
+	return true;
 }

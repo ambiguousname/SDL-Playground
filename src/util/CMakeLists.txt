@@ -1,4 +1,4 @@
-target_sources(SDLPlayground PRIVATE logger.cpp controls/controller.cpp controls/keyboard.cpp PUBLIC logger.h events.h macros.h math.h controls/controller.h controls/keyboard.h)
+target_sources(SDLPlayground PRIVATE logger.cpp vec_math.cpp controls/controller.cpp controls/keyboard.cpp PUBLIC logger.h events.h macros.h vec_math.h controls/controller.h controls/keyboard.h)
 
 
 add_custom_target(gamecontrollerdb

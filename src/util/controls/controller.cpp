@@ -3,6 +3,26 @@
 #include <stdexcept>
 #include <cstdarg>
 
+bool ControlData::operator==(const ControlData& rhs) const {
+	if (rhs.type != type) {
+		return false;
+	}
+
+	switch (type) {
+		case BOOL:
+			return rhs.boolean == boolean;
+		break;
+		case VECTOR2:
+			return rhs.vec == vec;
+		break;
+	}
+	return false;
+}
+
+bool ControlData::operator!=(const ControlData& rhs) const {
+	return !this->operator==(rhs);
+}
+
 // Here's my thoughts:
 // Let's say you have sources set to two analog sticks.
 // You're holding down one stick, but you flick the other.
@@ -11,18 +31,25 @@
 // Maybe how conflicts are resolved can also be set by an enumerator or function if we want different behaviors? But this should be fine for now.
 void Control::update() {
 	for (auto i = sources.begin(); i != sources.end(); i++) {
-		bool modified = i->get()->pullData(value);
-		if (modified) {
+		ControlData toChange = value;
+		bool modified = i->get()->pullData(toChange);
+		if (modified && toChange != value) {
+			value = toChange;
 			fire.invoke(value);
 			break;
 		}
 	}
 }
 
-Control::Control(ControlDataType expected_out) {
+Control::Control(ControlDataType expected_out) : value{expected_out} {
 	this->expected_out = expected_out;
-	if (expected_out == BOOL) { 
-		value = ControlDataOut{BOOL, false};
+	switch (expected_out) {
+		case BOOL:
+			value.boolean = false;
+			break;
+		case VECTOR2:
+			value.vec = Vector2(0.f, 0.f);
+			break;
 	}
 }
 
@@ -40,7 +67,7 @@ void Controller::update() {
 	}
 }
 
-void Controller::listenForControl(std::string control_name, Event<ControlDataOut> listener) {
+void Controller::listenForControl(std::string control_name, Event<ControlData> listener) {
 	if (auto control = controls.find(control_name); control != controls.end()) {
 		control->second->addBinding(listener);
 	} else {
@@ -58,6 +85,7 @@ void Controller::bindControl(std::string control_name, ControlDataType expected_
 		ControlSource& s = va_arg(args, ControlSource);
 		c->addSource(std::unique_ptr<ControlSource>(&s));
 	}
+	va_end(args);
 
 	controls.insert({control_name, std::move(c)});
 }
