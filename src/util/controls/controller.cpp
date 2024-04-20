@@ -30,14 +30,36 @@ bool ControlData::operator!=(const ControlData& rhs) const {
 // That way, we are just handling everything simultaneously.
 // Maybe how conflicts are resolved can also be set by an enumerator or function if we want different behaviors? But this should be fine for now.
 void Control::update() {
+	ControlData oldValue = value;
+
 	for (auto i = sources.begin(); i != sources.end(); i++) {
 		ControlData toChange = value;
 		bool modified = i->get()->pullData(toChange);
-		if (modified && toChange != value) {
+		
+		// Grab from our first source to start merging the different inputs we're getting:
+		if (i == sources.begin()) {
 			value = toChange;
-			fire.invoke(value);
-			break;
 		}
+
+		if (modified && toChange != value) {
+			switch (expected_out) {
+				case VECTOR2:
+					if (abs(toChange.vec.x) > abs(value.vec.x)) {
+						value.vec.x = toChange.vec.x;
+					}
+					if (abs(toChange.vec.y) > abs(value.vec.y)) {
+						value.vec.y = toChange.vec.y;
+					}
+					break;
+				default:
+					value = toChange;
+					break;
+			}
+		}
+	}
+
+	if (value != oldValue) {
+		fire.invoke(value);
 	}
 }
 
