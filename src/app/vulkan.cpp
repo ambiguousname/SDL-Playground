@@ -1,4 +1,5 @@
 #include "vulkan.h"
+#include <SDL_vulkan.h>
 
 const std::vector<const char*> validationLayers = {
 	"VK_LAYER_KHRONOS_validation"
@@ -43,33 +44,39 @@ void VulkanWrapper::createInstance() {
 		throw AppError("The requested Vulkan validation layers are not available.");
 	}
 
-	VkApplicationInfo appInfo{};
-	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-	appInfo.pApplicationName = app->name;
-	appInfo.applicationVersion = VK_MAKE_API_VERSION(0, 1, 0, 0);
-	appInfo.pEngineName = "AmbiguousEngine";
-	appInfo.engineVersion = VK_MAKE_API_VERSION(0, 0, 0, 1);
-	appInfo.apiVersion = VK_API_VERSION_1_0;
+	VkApplicationInfo appInfo = {};
+    appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+    appInfo.pApplicationName = app->name;
+    appInfo.applicationVersion = VK_MAKE_API_VERSION(0, 1, 0, 0);
+    appInfo.pEngineName = "AmbiguousEngine";
+    appInfo.engineVersion = VK_MAKE_API_VERSION(0, 1, 0, 0);
+    appInfo.apiVersion = VK_API_VERSION_1_3;
 
-	VkInstanceCreateInfo createInfo{};
+	VkInstanceCreateInfo createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 	createInfo.pApplicationInfo = &appInfo;
 
-	uint32_t extensionCount;
-	SDL_Vulkan_GetInstanceExtensions(app->window, &extensionCount, nullptr);
+	uint32_t extensionCount = 0;
+	bool success = SDL_Vulkan_GetInstanceExtensions(app->window, &extensionCount, nullptr);
+	if (!success) {
+		throw SDLError("Could not get Vulkan Instance extensions.");
+	}
 	
-	std::vector<const char*> extensionNames(extensionCount);
-	SDL_Vulkan_GetInstanceExtensions(app->window, &extensionCount, extensionNames.data());
+	const char** extensionNames = new const char*[extensionCount];
+	bool getNames = SDL_Vulkan_GetInstanceExtensions(app->window, &extensionCount, extensionNames);
+	if (!getNames) {
+		throw SDLError("Could not get Vulkan Instance extensions.");
+	}
 
 	createInfo.enabledExtensionCount = extensionCount;
-	createInfo.ppEnabledExtensionNames = extensionNames.data();
+	createInfo.ppEnabledExtensionNames = extensionNames;
 
 	if (enableValidationLayers) {
 		createInfo.enabledLayerCount = validationLayers.size();
 		createInfo.ppEnabledLayerNames = validationLayers.data();
 	} else {
+		createInfo.enabledLayerCount = 0;
 	}
-	createInfo.enabledLayerCount = 0;
 	
 	VkResult r = vkCreateInstance(&createInfo, nullptr, &instance);
 	if (r != VK_SUCCESS) {

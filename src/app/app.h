@@ -4,7 +4,6 @@
 #include "vulkan.h"
 
 class AppError : public std::exception {
-	protected:
 	std::string _msg;
 
 	public:
@@ -17,11 +16,12 @@ class AppError : public std::exception {
 	}
 };
 
-class SDLError : public AppError {
+class SDLError : public std::exception {
+	std::string _msg;
 	public:
 	
-	explicit SDLError(const char* message) : AppError(message) {}
-	explicit SDLError(std::string message) : AppError(message) {}
+	explicit SDLError(const char* message) : _msg(message) {}
+	explicit SDLError(std::string message) : _msg(message) {}
 
 	virtual const char* what() const throw() {
 		return ("An SDL Error occured: " +  _msg + " - " + SDL_GetError()).c_str();
@@ -30,8 +30,7 @@ class SDLError : public AppError {
 
 enum Context {
 	VULKAN,
-	HARDWARE_2D,
-	OPENGL
+	HARDWARE_2D
 };
 
 class VulkanWrapper;
@@ -41,13 +40,14 @@ class App {
 	Context context;
 
 	friend class VulkanWrapper;
+	friend class OpenGLWrapper;
 
 	public:
 	const char* name;
 
 	union {
-		SDL_Renderer* renderer;
-		VulkanWrapper* instance;
+		SDL_Renderer* sdlRenderer;
+		VulkanWrapper* vulkanInstance;
 	};
 	
 	App(const char* name, Context ctx);

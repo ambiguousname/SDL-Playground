@@ -1,6 +1,5 @@
 #pragma once
 #include "app.h"
-#include <SDL_vulkan.h>
 #include <vulkan/vulkan.hpp>
 
 class App;
