@@ -1,5 +1,4 @@
 #include "controller.h"
-#include "../logger.h"
 #include <stdexcept>
 #include <cstdarg>
 
@@ -93,7 +92,7 @@ void Controller::listenForControl(std::string control_name, Event<ControlData> l
 	if (auto control = controls.find(control_name); control != controls.end()) {
 		control->second->addBinding(listener);
 	} else {
-		logErr(OTHER, "Could not get control " + control_name);
+		throw std::runtime_error("Could not get control " + control_name);
 	}
 }
 
@@ -120,7 +119,6 @@ std::shared_ptr<Control> Controller::getControl(std::string control_name) {
 	if (auto control = controls.find(control_name); control != controls.end()) {
 		return control->second;
 	} else {
-		logErr(OTHER, "Could not get control " + control_name);
-		throw std::domain_error("Could not return control of kind " + control_name);
+		throw std::runtime_error("Could not return control of kind " + control_name);
 	}
 }

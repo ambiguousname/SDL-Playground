@@ -1,4 +1,4 @@
 #pragma once
-#include "app.h"
+#include "app/app.h"
 
-ExitCode game(App& app);
+void game(App& app);

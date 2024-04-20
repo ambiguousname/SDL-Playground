@@ -7,3 +7,11 @@ struct Vector2 {
 	bool operator==(const Vector2& rhs) const;
 	bool operator!=(const Vector2& rhs) const;
 };
+
+struct Vector3 {
+	float x;
+	float y;
+	float z;
+	
+	Vector3(float x, float y, float z) { this->x = x; this->y = y; this->z = z; }
+};

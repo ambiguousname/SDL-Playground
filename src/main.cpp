@@ -1,11 +1,8 @@
 #include "game.h"
+#include <iostream>
 
 int main(int argc, char* args[]) {
-	ExitCode status;
-	App app = App(status);
-	if (status != SUCCESS) {
-		return status;
-	}
-	status = game(app);
-	return status;
+	App app = App("Game", OPENGL);
+	game(app);
+	return 0;
 }
