@@ -1,7 +1,7 @@
 #pragma once
 #include <SDL.h>
 #include "../util/controls/controller.h"
-#include "vulkan.h"
+#include "vulkan/vulkan.h"
 
 class AppError : public std::exception {
 	std::string _msg;
@@ -35,6 +35,7 @@ enum Context {
 };
 
 class VulkanWrapper;
+class VulkanRenderer;
 
 class App {
 	SDL_Window* window;

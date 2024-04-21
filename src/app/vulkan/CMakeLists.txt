@@ -1,0 +1,1 @@
+target_sources(SDLPlayground PRIVATE vulkan.cpp renderer.cpp PUBLIC vulkan.h renderer.h)

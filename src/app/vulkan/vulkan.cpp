@@ -1,7 +1,6 @@
 #include "vulkan.h"
 #include <SDL_vulkan.h>
 #include <iostream>
-#include <algorithm>
 #include <set>
 
 const std::vector<const char*> validationLayers = {
@@ -43,13 +42,16 @@ VulkanWrapper::VulkanWrapper(const App* app) : app(app) {
 	createDebug();
 	createSurface();
 	hookDevices(); 
-	createSwapChain();
+	renderer = VulkanRenderer(app->window, surface, physicalDevice, device);
 }
 
 VulkanWrapper::~VulkanWrapper() {
-	vkDestroySwapchainKHR(device.ptr, swapChain.ptr, nullptr);
-	vkDestroyDevice(device.ptr, nullptr);
+	renderer.destroy();
+
+	vkDestroyDevice(device, nullptr);
+
 	vkDestroySurfaceKHR(instance, surface, nullptr);
+
 	destroyDebug();
 
 	vkDestroyInstance(instance, nullptr);
@@ -287,11 +289,11 @@ void VulkanWrapper::hookDevices() {
 		createInfo.enabledLayerCount = 0;
 	}
 
-	if (vkCreateDevice(physicalDevice.ptr, &createInfo, nullptr, &device.ptr) != VK_SUCCESS) {
+	if (vkCreateDevice(physicalDevice.ptr, &createInfo, nullptr, &device) != VK_SUCCESS) {
 		throw AppError("Vulkan could not create a logical device.");
 	}
-	vkGetDeviceQueue(device.ptr, physicalDevice.indices.graphicsFamily.value(), 0, &graphicsQueue);
-	vkGetDeviceQueue(device.ptr, physicalDevice.indices.presentFamily.value(), 0, &presentQueue);
+	vkGetDeviceQueue(device, physicalDevice.indices.graphicsFamily.value(), 0, &graphicsQueue);
+	vkGetDeviceQueue(device, physicalDevice.indices.presentFamily.value(), 0, &presentQueue);
 }
 
 void VulkanWrapper::createSurface() {
@@ -301,75 +303,28 @@ void VulkanWrapper::createSurface() {
 	}
 }
 
-void VulkanWrapper::createSwapChain() {
-	VkSurfaceFormatKHR format = physicalDevice.swapChainDetails.formats[0];
-	for (const auto& aFormat : physicalDevice.swapChainDetails.formats) {
-		if (aFormat.format == VK_FORMAT_B8G8R8_SRGB && aFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
-			format = aFormat;
+void VulkanSwapChain::createImageViews(VkDevice device) {
+	imageViews.resize(images.size());
+	for (size_t i = 0; i < images.size(); i++) {
+		VkImageViewCreateInfo createInfo{};
+		createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+		createInfo.image = images[i];
+
+		createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+		createInfo.format = format;
+
+		createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+		createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+		createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+		createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+
+		createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		createInfo.subresourceRange.baseMipLevel = 0;
+		createInfo.subresourceRange.levelCount = 1;
+		createInfo.subresourceRange.baseArrayLayer = 0;
+		createInfo.subresourceRange.layerCount = 1;
+		if (vkCreateImageView(device, &createInfo, nullptr, &imageViews[i]) != VK_SUCCESS) {
+			throw AppError("Vulkan failed to create image views.");
 		}
 	}
-
-	VkPresentModeKHR mode = VK_PRESENT_MODE_FIFO_KHR;
-	for (const auto& aMode : physicalDevice.swapChainDetails.presentModes) {
-		if (aMode == VK_PRESENT_MODE_MAILBOX_KHR) {
-			mode = aMode;
-		}
-	}
-
-	VkExtent2D extents = physicalDevice.swapChainDetails.capabilities.currentExtent;
-	if (extents.width == std::numeric_limits<uint32_t>::max()) {
-		int width, height;
-		SDL_GetWindowSizeInPixels(app->window, &width, &height);
-
-		extents.width = std::clamp(static_cast<uint32_t>(width), physicalDevice.swapChainDetails.capabilities.minImageExtent.width, physicalDevice.swapChainDetails.capabilities.maxImageExtent.width);
-		extents.height = std::clamp(static_cast<uint32_t>(height), physicalDevice.swapChainDetails.capabilities.minImageExtent.height, physicalDevice.swapChainDetails.capabilities.maxImageExtent.height);
-	}
-
-	uint32_t imageCount = physicalDevice.swapChainDetails.capabilities.minImageCount + 1;
-	if (physicalDevice.swapChainDetails.capabilities.maxImageCount > 0 && imageCount > physicalDevice.swapChainDetails.capabilities.maxImageCount) {
-		imageCount = physicalDevice.swapChainDetails.capabilities.maxImageCount;
-	}
-
-	VkSwapchainCreateInfoKHR createInfo{};
-	createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-	createInfo.surface = surface;
-	
-	createInfo.minImageCount = imageCount;
-	createInfo.imageFormat = format.format;
-	createInfo.imageColorSpace = format.colorSpace;
-	createInfo.imageExtent = extents;
-	// Always set to one, unless 3D stereoscopic image.
-	createInfo.imageArrayLayers = 1;
-	createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-
-	uint32_t queueFamilyIndices[] = {physicalDevice.indices.graphicsFamily.value(), physicalDevice.indices.presentFamily.value()};
-
-	if (physicalDevice.indices.graphicsFamily != physicalDevice.indices.presentFamily) {
-		createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
-		createInfo.queueFamilyIndexCount = 2;
-		createInfo.pQueueFamilyIndices = queueFamilyIndices;
-	} else {
-		createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-	}
-
-	// In case we want to transform the image in any way before rendering:
-	createInfo.preTransform = physicalDevice.swapChainDetails.capabilities.currentTransform;
-	createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-	createInfo.presentMode = mode;
-	createInfo.clipped = VK_TRUE;
-
-	// TODO: This needs to allow for window resizing.
-	createInfo.oldSwapchain = VK_NULL_HANDLE;
-
-	if (vkCreateSwapchainKHR(device.ptr, &createInfo, nullptr, &swapChain.ptr) != VK_SUCCESS) {
-		throw AppError("Vulkan could not create a swap chain.");
-	}
-
-
-	vkGetSwapchainImagesKHR(device.ptr, swapChain.ptr, &imageCount, nullptr);
-	swapChain.images.resize(imageCount);
-	vkGetSwapchainImagesKHR(device.ptr, swapChain.ptr, &imageCount, swapChain.images.data());
-
-	swapChain.format = format.format;
-	swapChain.extents = extents;
 }

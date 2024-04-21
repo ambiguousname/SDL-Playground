@@ -1,9 +1,8 @@
 #pragma once
-#include "app.h"
 #include <vulkan/vulkan.h>
+#include <vector>
+#include <SDL_video.h>
 #include <optional>
-
-class App;
 
 
 struct QueueFamilyIndices {
@@ -31,43 +30,26 @@ struct VulkanPhysicalDevice {
 	bool isSuitable();
 };
 
-struct VulkanDevice {
-	VkDevice ptr;
-	VulkanDevice() { ptr = VK_NULL_HANDLE; }
-};
-
 struct VulkanSwapChain {
 	VkSwapchainKHR ptr;
 	std::vector<VkImage> images;
 	std::vector<VkImageView> imageViews;
 	VkFormat format;
 	VkExtent2D extents;
+
+	void createImageViews(VkDevice device);
+	void destroy(VkDevice device);
+	VulkanSwapChain(SDL_Window* window, VkSurfaceKHR surface, VulkanPhysicalDevice physicalDevice, VkDevice device);
+	VulkanSwapChain() {}
 };
 
-class VulkanWrapper {
-	protected:
-	const App* app;
-	VkInstance instance;
-
-	VulkanPhysicalDevice physicalDevice;
-	VulkanDevice device;
-	VkQueue graphicsQueue;
-	VkQueue presentQueue;
-	VkSurfaceKHR surface;
+class VulkanRenderer {
 	VulkanSwapChain swapChain;
-
-	VkDebugUtilsMessengerEXT debugMessenger;
-
-	void createInstance();
-	void hookDevices();
-	void createSurface();
-	void createSwapChain();
-
-	
-	void createDebug();
-	void destroyDebug();
+	VkPipelineLayout pipelineLayout;
+	VkDevice device;
 
 	public:
-	~VulkanWrapper();
-	VulkanWrapper(const App* app);
+	void destroy();
+	VulkanRenderer() {}
+	VulkanRenderer(SDL_Window* window, VkSurfaceKHR surface, VulkanPhysicalDevice physicalDevice, VkDevice device);
 };

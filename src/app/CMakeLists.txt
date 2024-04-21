@@ -1,1 +1,3 @@
-target_sources(SDLPlayground PRIVATE app.cpp vulkan.cpp PUBLIC app.h vulkan.h)
+target_sources(SDLPlayground PRIVATE app.cpp PUBLIC app.h)
+
+add_subdirectory(vulkan)

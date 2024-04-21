@@ -85,6 +85,7 @@
 		"*.inc": "cpp",
 		"fstream": "cpp",
 		"iomanip": "cpp",
-		"shared_mutex": "cpp"
+		"shared_mutex": "cpp",
+		"expected": "cpp"
 	}
 }
