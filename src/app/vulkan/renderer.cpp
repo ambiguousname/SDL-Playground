@@ -1,6 +1,7 @@
 #include "renderer.h"
 #include <algorithm>
 #include "../app.h"
+#include "shader.h"
 
 void VulkanSwapChain::destroy(VkDevice device) {
 	for (auto imageView : imageViews) {
@@ -124,6 +125,7 @@ void VulkanRenderer::destroy() {
 		pass.destroy(this->device);
 	}
 	vkDestroyPipelineLayout(this->device, pipelineLayout, nullptr);
+	vkDestroyPipeline(this->device, graphicsPipeline, nullptr);
 }
 
 VulkanRenderer::VulkanRenderer(SDL_Window* window, VkSurfaceKHR surface, const VulkanPhysicalDevice& physicalDevice, VkDevice device) {
@@ -227,4 +229,33 @@ VulkanRenderer::VulkanRenderer(SDL_Window* window, VkSurfaceKHR surface, const V
 	if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
 		throw AppError("Vulkan could not create a render pipeline layout.");
 	}
+
+	VulkanShader vert(device, "shaders/vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
+	VulkanShader frag(device, "shaders/frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
+	VkPipelineShaderStageCreateInfo shaderStages[] = {vert.info, frag.info};
+
+	VkGraphicsPipelineCreateInfo pipelineInfo{};
+	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+	pipelineInfo.stageCount = 2;
+	pipelineInfo.pStages = shaderStages;
+	pipelineInfo.pVertexInputState = &vertexInputInfo;
+	pipelineInfo.pInputAssemblyState = &inputAssembly;
+	pipelineInfo.pViewportState = &viewportState;
+	pipelineInfo.pRasterizationState = &rasterizer;
+	pipelineInfo.pMultisampleState = &multisampling;
+	pipelineInfo.pDepthStencilState = nullptr; // Optional
+	pipelineInfo.pColorBlendState = &colorBlending;
+	pipelineInfo.pDynamicState = &dynamicState;
+	pipelineInfo.layout = pipelineLayout;
+	pipelineInfo.renderPass = passes[0].ptr;
+	pipelineInfo.subpass = 0;
+	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
+	pipelineInfo.basePipelineIndex = -1; // Optional
+
+	if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
+		throw AppError("Vulkan could not create graphics pipeline.");
+	}
+
+	vkDestroyShaderModule(device, frag.shaderModule, nullptr);
+	vkDestroyShaderModule(device, vert.shaderModule, nullptr);
 }

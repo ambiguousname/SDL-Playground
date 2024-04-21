@@ -1,7 +1,7 @@
 #pragma once
 #include "../app.h"
 #include "renderer.h"
-#include <vulkan/vulkan.h>
+#include <vulkan/vulkan.hpp>
 #include <optional>
 
 class App;

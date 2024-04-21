@@ -1,5 +1,5 @@
 #pragma once
-#include <vulkan/vulkan.h>
+#include <vulkan/vulkan.hpp>
 #include <vector>
 #include <SDL_video.h>
 #include <optional>
@@ -51,9 +51,11 @@ struct VulkanRenderPass {
 
 class VulkanRenderer {
 	VulkanSwapChain swapChain;
-	VkPipelineLayout pipelineLayout;
 	VkDevice device;
 	std::vector<VulkanRenderPass> passes;
+	
+	VkPipelineLayout pipelineLayout;
+	VkPipeline graphicsPipeline;
 
 	public:
 	void destroy();
