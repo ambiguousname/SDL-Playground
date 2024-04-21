@@ -2,10 +2,8 @@ cmake_minimum_required(VERSION 3.25.1)
 project(SDLPlayground)
 
 find_package(SDL2 REQUIRED)
-include_directories(SDLPlayground ${SDL2_INCLUDE_DIRS})
-
 find_package(Vulkan REQUIRED)
-include_directories(SDLPlayground ${Vulkan_INCLUDE_DIRS})
+include_directories(SDLPlayground ${Vulkan_INCLUDE_DIR})
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_BUILD_TYPE Debug)

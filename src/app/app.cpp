@@ -8,7 +8,7 @@ App::App(const char* name, Context ctx) {
 	if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
 		throw AppError("Could not init SDL.");
 	}
-	window = SDL_CreateWindow(name, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_VULKAN );
+	window = SDL_CreateWindow(name, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, SDL_WINDOW_SHOWN | SDL_WINDOW_VULKAN );
 	if (window == nullptr) {
 		throw SDLError("Could not create window.");
 	}
