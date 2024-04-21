@@ -142,11 +142,11 @@ void VulkanWrapper::destroyDebug() {
 
 bool isDeviceSuitable(VkPhysicalDevice device) {
 	// FIXME: Is there something with my Vulkan drivers?
-	VkPhysicalDeviceProperties2 deviceProperties{};
+	VkPhysicalDeviceProperties deviceProperties{};
 	// VkPhysicalDeviceFeatures deviceFeatures{};
-	vkGetPhysicalDeviceProperties2(device, &deviceProperties);
+	vkGetPhysicalDeviceProperties(device, &deviceProperties);
 	// vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
-	std::cout << "Found " << deviceProperties.properties.deviceName << std::endl;
+	std::cout << "Found " << deviceProperties.deviceName << std::endl;
 
 	return true;
 }
