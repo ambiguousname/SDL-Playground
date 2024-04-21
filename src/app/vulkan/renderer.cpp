@@ -9,7 +9,7 @@ void VulkanSwapChain::destroy(VkDevice device) {
 	vkDestroySwapchainKHR(device, ptr, nullptr);
 }
 
-VulkanSwapChain::VulkanSwapChain(SDL_Window* window, VkSurfaceKHR surface, VulkanPhysicalDevice physicalDevice, VkDevice device) {
+VulkanSwapChain::VulkanSwapChain(SDL_Window* window, VkSurfaceKHR surface, const VulkanPhysicalDevice& physicalDevice, VkDevice device) {
 	VkSurfaceFormatKHR format = physicalDevice.swapChainDetails.formats[0];
 	for (const auto& aFormat : physicalDevice.swapChainDetails.formats) {
 		if (aFormat.format == VK_FORMAT_B8G8R8_SRGB && aFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
@@ -83,14 +83,54 @@ VulkanSwapChain::VulkanSwapChain(SDL_Window* window, VkSurfaceKHR surface, Vulka
 	createImageViews(device);
 }
 
+VulkanRenderPass::VulkanRenderPass(VkDevice device, const VulkanSwapChain& swapChain) {
+	VkAttachmentDescription colorAttachment{};
+	colorAttachment.format = swapChain.format;
+	colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+	colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+	colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+	VkAttachmentReference colorAttachmentRef{};
+	colorAttachmentRef.attachment = 0;
+	colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+	VkSubpassDescription subpass{};
+	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+	subpass.colorAttachmentCount = 1;
+	subpass.pColorAttachments = &colorAttachmentRef;
+
+	VkRenderPassCreateInfo renderPassInfo{};
+	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+	renderPassInfo.attachmentCount = 1;
+	renderPassInfo.pAttachments = &colorAttachment;
+	renderPassInfo.subpassCount = 1;
+	renderPassInfo.pSubpasses = &subpass;
+	if (vkCreateRenderPass(device, &renderPassInfo, nullptr, &ptr) != VK_SUCCESS) {
+		throw AppError("Vulkan could not create render pass.");
+	}
+}
+
+void VulkanRenderPass::destroy(VkDevice device) {
+	vkDestroyRenderPass(device, ptr, nullptr);
+}
+
 void VulkanRenderer::destroy() {
 	swapChain.destroy(this->device);
+	for (auto pass : passes) {
+		pass.destroy(this->device);
+	}
 	vkDestroyPipelineLayout(this->device, pipelineLayout, nullptr);
 }
 
-VulkanRenderer::VulkanRenderer(SDL_Window* window, VkSurfaceKHR surface, VulkanPhysicalDevice physicalDevice, VkDevice device) {
-	swapChain = VulkanSwapChain(window, surface, physicalDevice, device);
+VulkanRenderer::VulkanRenderer(SDL_Window* window, VkSurfaceKHR surface, const VulkanPhysicalDevice& physicalDevice, VkDevice device) {
 	this->device = device;
+
+	swapChain = VulkanSwapChain(window, surface, physicalDevice, device);
+	passes.push_back(VulkanRenderPass(this->device, swapChain));
 
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;

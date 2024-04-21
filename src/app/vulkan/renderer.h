@@ -39,17 +39,24 @@ struct VulkanSwapChain {
 
 	void createImageViews(VkDevice device);
 	void destroy(VkDevice device);
-	VulkanSwapChain(SDL_Window* window, VkSurfaceKHR surface, VulkanPhysicalDevice physicalDevice, VkDevice device);
+	VulkanSwapChain(SDL_Window* window, VkSurfaceKHR surface, const VulkanPhysicalDevice& physicalDevice, VkDevice device);
 	VulkanSwapChain() {}
+};
+
+struct VulkanRenderPass {
+	VkRenderPass ptr;
+	VulkanRenderPass(VkDevice device, const VulkanSwapChain& swapChain);
+	void destroy(VkDevice device);
 };
 
 class VulkanRenderer {
 	VulkanSwapChain swapChain;
 	VkPipelineLayout pipelineLayout;
 	VkDevice device;
+	std::vector<VulkanRenderPass> passes;
 
 	public:
 	void destroy();
 	VulkanRenderer() {}
-	VulkanRenderer(SDL_Window* window, VkSurfaceKHR surface, VulkanPhysicalDevice physicalDevice, VkDevice device);
+	VulkanRenderer(SDL_Window* window, VkSurfaceKHR surface, const VulkanPhysicalDevice& physicalDevice, VkDevice device);
 };
