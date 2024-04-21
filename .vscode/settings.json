@@ -82,6 +82,9 @@
 		"string_view": "cpp",
 		"cinttypes": "cpp",
 		"*.rh": "cpp",
-		"*.inc": "cpp"
+		"*.inc": "cpp",
+		"fstream": "cpp",
+		"iomanip": "cpp",
+		"shared_mutex": "cpp"
 	}
 }

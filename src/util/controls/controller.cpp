@@ -104,7 +104,8 @@ void Controller::bindControl(std::string control_name, ControlDataType expected_
 	for (int i = 0; i < sources_count; i++) {
 		// Grab it by reference rather than copying the arg, so we keep all the functionality it needs.
 		ControlSource& s = va_arg(args, ControlSource);
-		c->addSource(std::unique_ptr<ControlSource>(&s));
+		ControlSource* copy = s.clone();
+		c->addSource(std::unique_ptr<ControlSource>(copy));
 	}
 	va_end(args);
 

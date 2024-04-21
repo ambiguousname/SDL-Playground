@@ -34,6 +34,7 @@ class ControlSource {
 	/// @param out `Control`'s value to change.
 	/// @return Whether or not `out` has been modified.
 	virtual bool pullData(ControlData& out) { return false; }
+	virtual ControlSource* clone() const = 0;
 };
 
 /// @brief A specific kind of input, determined by `expected_out`. We could say that we're expecting a boolean, or a vector2, or whatever. The main idea is that we're going to configure our sources to produce that result however we want.

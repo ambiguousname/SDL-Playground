@@ -7,9 +7,11 @@ class KeySource : public ControlSource {
 	const char* keyName;
 	bool pressedDown = false;
 	public:
+
 	bool isPressed() { return pressedDown; }
 	KeySource(const char* keyName) {this->keyName = keyName;}
 	bool pullData(ControlData& out) override;
+	virtual KeySource* clone() const { return new KeySource(*this); }
 };
 
 class KeyVector : public ControlSource {
@@ -19,4 +21,5 @@ class KeyVector : public ControlSource {
 	public:
 	KeyVector(const char* keys[4]) { for (int i = 0; i < 4; i++) { this->keys[i] = keys[i]; } }
 	bool pullData(ControlData& out) override;
+	virtual KeyVector* clone() const { return new KeyVector(*this); }
 };
