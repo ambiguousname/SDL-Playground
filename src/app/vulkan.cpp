@@ -36,8 +36,16 @@ bool checkValidationSupport() {
 	return true;
 }
 
+VulkanWrapper::VulkanWrapper(const App* app) : app(app) { 
+	createInstance();
+	createDebug();
+	hookDevices(); 
+	createSurface();
+}
+
 VulkanWrapper::~VulkanWrapper() {
 	destroyDebug();
+	vkDestroyDevice(device.ptr, nullptr);
 
 	vkDestroyInstance(instance, nullptr);
 }
@@ -140,15 +148,37 @@ void VulkanWrapper::destroyDebug() {
 	}
 }
 
-bool isDeviceSuitable(VkPhysicalDevice device) {
-	// FIXME: Is there something with my Vulkan drivers?
-	VkPhysicalDeviceProperties deviceProperties{};
-	// VkPhysicalDeviceFeatures deviceFeatures{};
-	vkGetPhysicalDeviceProperties(device, &deviceProperties);
-	// vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
-	std::cout << "Found " << deviceProperties.deviceName << std::endl;
+VulkanPhysicalDevice::VulkanPhysicalDevice(VkPhysicalDevice device) {
+	ptr = device;
+	vkGetPhysicalDeviceProperties(device, &properties);
+	vkGetPhysicalDeviceFeatures(device, &features);
 
-	return true;
+	std::cout << "Found " << properties.deviceName << std::endl;
+
+	uint32_t queueFamilyCount = 0;
+	vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
+
+	std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+
+
+	vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
+
+	int i = 0;
+	for (const auto& queueFamily : queueFamilies) {
+		if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+			indices.graphicsFamily = i;
+		}
+
+		if (indices.isComplete()) {
+			break;
+		}
+
+		i++;
+	}
+}
+
+bool VulkanPhysicalDevice::isSuitable() {
+	return indices.isComplete();
 }
 
 void VulkanWrapper::hookDevices() {
@@ -163,13 +193,46 @@ void VulkanWrapper::hookDevices() {
 	vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
 
 	for (const auto& device : devices) {
-		if (isDeviceSuitable(device)) {
-			physicalDevice = device;
+		VulkanPhysicalDevice d(device);
+		if (d.isSuitable()) {
+			physicalDevice = d;
 			break;
 		}
 	}
 
-	if (physicalDevice == VK_NULL_HANDLE) {
+	if (physicalDevice.ptr == VK_NULL_HANDLE) {
 		throw AppError("Vulkan could not find a GPU that supports all requested features.");
 	}
+
+	VkDeviceQueueCreateInfo queueCreateInfo{};
+	queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+	queueCreateInfo.queueFamilyIndex = physicalDevice.indices.graphicsFamily.value();
+	queueCreateInfo.queueCount = 1;
+	float priority = 1.0f;
+	queueCreateInfo.pQueuePriorities = &priority;
+
+	VkPhysicalDeviceFeatures deviceFeatures{};
+
+	VkDeviceCreateInfo createInfo{};
+	createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+	createInfo.pQueueCreateInfos = &queueCreateInfo;
+	createInfo.queueCreateInfoCount = 1;
+	createInfo.pEnabledFeatures = &deviceFeatures;
+	createInfo.enabledExtensionCount = 0;
+
+	if (enableValidationLayers) {
+		createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+		createInfo.ppEnabledLayerNames = validationLayers.data();
+	} else {
+		createInfo.enabledLayerCount = 0;
+	}
+
+	if (vkCreateDevice(physicalDevice.ptr, &createInfo, nullptr, &device.ptr) != VK_SUCCESS) {
+		throw AppError("Vulkan could not create a logical device.");
+	}
+	vkGetDeviceQueue(device.ptr, physicalDevice.indices.graphicsFamily.value(), 0, &graphicsQueue);
+}
+
+void VulkanWrapper::createSurface() {
+	
 }
