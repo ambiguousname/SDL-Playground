@@ -11,10 +11,16 @@ class VulkanWrapper {
 
 	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
 
+	VkDebugUtilsMessengerEXT debugMessenger;
+
 	void createInstance();
 	void hookDevices();
 
+	
+	void createDebug();
+	void destroyDebug();
+
 	public:
 	~VulkanWrapper();
-	VulkanWrapper(const App* app) : app(app) { createInstance(); /*hookDevices();*/ }
+	VulkanWrapper(const App* app) : app(app) { createInstance(); createDebug(); hookDevices(); }
 };

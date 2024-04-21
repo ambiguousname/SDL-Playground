@@ -9,21 +9,22 @@ class AppError : public std::exception {
 	public:
 	
 	explicit AppError(const char* message) : _msg(message) {}
-	explicit AppError(std::string message) : _msg(message) {}
+	explicit AppError(std::string& message) : _msg(message) {}
+	virtual ~AppError() noexcept {}
 
 	virtual const char* what() const throw() {
-		return ("An Application Error occured: " + _msg).c_str();
+		return _msg.c_str();
 	}
 };
 
-class SDLError : public std::exception {
+class SDLError : public AppError {
 	std::string _msg;
 	public:
 	
-	explicit SDLError(const char* message) : _msg(message) {}
-	explicit SDLError(std::string message) : _msg(message) {}
+	explicit SDLError(const char* message) : AppError(message) {}
+	explicit SDLError(std::string message) : AppError(message) {}
 
-	virtual const char* what() const throw() {
+	virtual const char* what() const throw() override {
 		return ("An SDL Error occured: " +  _msg + " - " + SDL_GetError()).c_str();
 	}
 };
