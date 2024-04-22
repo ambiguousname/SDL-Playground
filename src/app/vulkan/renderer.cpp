@@ -3,20 +3,52 @@
 #include "../app.h"
 #include "shader.h"
 
-void VulkanSwapChain::destroy(VkDevice device) {
+void VulkanSwapChain::destroy() {
 	for (auto imageView : imageViews) {
 		vkDestroyImageView(device, imageView, nullptr);
+	}
+	for (auto framebuffer : framebuffers) {
+		vkDestroyFramebuffer(device, framebuffer, nullptr);
 	}
 	vkDestroySwapchainKHR(device, ptr, nullptr);
 }
 
+void VulkanSwapChain::createImageViews() {
+	imageViews.resize(images.size());
+	for (size_t i = 0; i < images.size(); i++) {
+		VkImageViewCreateInfo createInfo{};
+		createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+		createInfo.image = images[i];
+
+		createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+		createInfo.format = format;
+
+		createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+		createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+		createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+		createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+
+		createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		createInfo.subresourceRange.baseMipLevel = 0;
+		createInfo.subresourceRange.levelCount = 1;
+		createInfo.subresourceRange.baseArrayLayer = 0;
+		createInfo.subresourceRange.layerCount = 1;
+		if (vkCreateImageView(device, &createInfo, nullptr, &imageViews[i]) != VK_SUCCESS) {
+			throw AppError("Vulkan failed to create image views.");
+		}
+	}
+}
+
 VulkanSwapChain::VulkanSwapChain(SDL_Window* window, VkSurfaceKHR surface, const VulkanPhysicalDevice& physicalDevice, VkDevice device) {
+	this->device = device;
 	VkSurfaceFormatKHR format = physicalDevice.swapChainDetails.formats[0];
 	for (const auto& aFormat : physicalDevice.swapChainDetails.formats) {
 		if (aFormat.format == VK_FORMAT_B8G8R8_SRGB && aFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
 			format = aFormat;
 		}
 	}
+	
+	this->format = format.format;
 
 	VkPresentModeKHR mode = VK_PRESENT_MODE_FIFO_KHR;
 	for (const auto& aMode : physicalDevice.swapChainDetails.presentModes) {
@@ -25,7 +57,7 @@ VulkanSwapChain::VulkanSwapChain(SDL_Window* window, VkSurfaceKHR surface, const
 		}
 	}
 
-	VkExtent2D extents = physicalDevice.swapChainDetails.capabilities.currentExtent;
+	this->extents = physicalDevice.swapChainDetails.capabilities.currentExtent;
 	if (extents.width == std::numeric_limits<uint32_t>::max()) {
 		int width, height;
 		SDL_GetWindowSizeInPixels(window, &width, &height);
@@ -46,7 +78,7 @@ VulkanSwapChain::VulkanSwapChain(SDL_Window* window, VkSurfaceKHR surface, const
 	createInfo.minImageCount = imageCount;
 	createInfo.imageFormat = format.format;
 	createInfo.imageColorSpace = format.colorSpace;
-	createInfo.imageExtent = extents;
+	createInfo.imageExtent = VkExtent2D(extents);
 	// Always set to one, unless 3D stereoscopic image.
 	createInfo.imageArrayLayers = 1;
 	createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
@@ -79,9 +111,7 @@ VulkanSwapChain::VulkanSwapChain(SDL_Window* window, VkSurfaceKHR surface, const
 	images.resize(imageCount);
 	vkGetSwapchainImagesKHR(device, ptr, &imageCount, images.data());
 
-	this->format = format.format;
-
-	createImageViews(device);
+	createImageViews();
 }
 
 VulkanRenderPass::VulkanRenderPass(VkDevice device, const VulkanSwapChain& swapChain) {
@@ -120,10 +150,8 @@ void VulkanRenderPass::destroy(VkDevice device) {
 }
 
 void VulkanRenderer::destroy() {
-	swapChain.destroy(this->device);
-	for (auto pass : passes) {
-		pass.destroy(this->device);
-	}
+	swapChain.destroy();
+	renderPass.destroy(this->device);
 	vkDestroyPipelineLayout(this->device, pipelineLayout, nullptr);
 	vkDestroyPipeline(this->device, graphicsPipeline, nullptr);
 }
@@ -132,7 +160,7 @@ VulkanRenderer::VulkanRenderer(SDL_Window* window, VkSurfaceKHR surface, const V
 	this->device = device;
 
 	swapChain = VulkanSwapChain(window, surface, physicalDevice, device);
-	passes.push_back(VulkanRenderPass(this->device, swapChain));
+	renderPass = VulkanRenderPass(this->device, swapChain);
 
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -156,7 +184,7 @@ VulkanRenderer::VulkanRenderer(SDL_Window* window, VkSurfaceKHR surface, const V
 
 	VkRect2D scissor{};
 	scissor.offset = {0, 0};
-	scissor.extent = swapChain.extents;
+	scissor.extent = VkExtent2D(swapChain.extents);
 
 	std::vector<VkDynamicState> dynamicStates = {
 		VK_DYNAMIC_STATE_VIEWPORT,
@@ -247,7 +275,7 @@ VulkanRenderer::VulkanRenderer(SDL_Window* window, VkSurfaceKHR surface, const V
 	pipelineInfo.pColorBlendState = &colorBlending;
 	pipelineInfo.pDynamicState = &dynamicState;
 	pipelineInfo.layout = pipelineLayout;
-	pipelineInfo.renderPass = passes[0].ptr;
+	pipelineInfo.renderPass = renderPass.ptr;
 	pipelineInfo.subpass = 0;
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
 	pipelineInfo.basePipelineIndex = -1; // Optional
@@ -258,4 +286,29 @@ VulkanRenderer::VulkanRenderer(SDL_Window* window, VkSurfaceKHR surface, const V
 
 	vkDestroyShaderModule(device, frag.shaderModule, nullptr);
 	vkDestroyShaderModule(device, vert.shaderModule, nullptr);
+
+	swapChain.createFramebuffers(renderPass.ptr);
+}
+
+void VulkanSwapChain::createFramebuffers(VkRenderPass renderPass) {
+	framebuffers.resize(imageViews.size());
+
+	for (size_t i = 0; i < imageViews.size(); i++) {
+		VkImageView attachments[] = {
+			imageViews[i]
+		};
+
+		VkFramebufferCreateInfo framebufferInfo{};
+		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+		framebufferInfo.renderPass = renderPass;
+		framebufferInfo.attachmentCount = 1;
+		framebufferInfo.pAttachments = attachments;
+		framebufferInfo.width = extents.width;
+		framebufferInfo.height = extents.height;
+		framebufferInfo.layers = 1;
+
+		if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &framebuffers[i]) != VK_SUCCESS) {
+			throw AppError("Vulkan could not create a framebuffer.");
+		}
+	}
 }
