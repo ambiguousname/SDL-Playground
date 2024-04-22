@@ -1,6 +1,7 @@
 #pragma once
 #include "../app.h"
 #include "renderer.h"
+#include "devices.h"
 #include <vulkan/vulkan.hpp>
 #include <optional>
 
@@ -12,9 +13,8 @@ class VulkanWrapper {
 	VkInstance instance;
 
 	VulkanPhysicalDevice physicalDevice;
-	VkDevice device;
-	VkQueue graphicsQueue;
-	VkQueue presentQueue;
+	VulkanLogicDevice device;
+
 	VkSurfaceKHR surface;
 	VulkanRenderer renderer;
 
@@ -31,6 +31,6 @@ class VulkanWrapper {
 
 	public:
 	~VulkanWrapper();
-	void draw() { renderer.draw(graphicsQueue, presentQueue); vkDeviceWaitIdle(device);  }
+	void draw() { renderer.draw(); vkDeviceWaitIdle(device.ptr);  }
 	VulkanWrapper(const App* app);
 };
