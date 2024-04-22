@@ -52,5 +52,10 @@ void App::update(void (*update)(App&)) {
 		}
 		SDL_PumpEvents();
 		update(*this);
+		switch(context) {
+			case VULKAN:
+				vulkanInstance->draw();
+			break;
+		}
 	}
 }

@@ -31,5 +31,6 @@ class VulkanWrapper {
 
 	public:
 	~VulkanWrapper();
+	void draw() { renderer.draw(graphicsQueue, presentQueue); vkDeviceWaitIdle(device);  }
 	VulkanWrapper(const App* app);
 };

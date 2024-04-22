@@ -61,8 +61,21 @@ class VulkanRenderer {
 	VkPipelineLayout pipelineLayout;
 	VkPipeline graphicsPipeline;
 
+	VkCommandPool commandPool;
+	VkCommandBuffer commandBuffer;
+
+	void createCommandPool(const VulkanPhysicalDevice& physicalDevice);
+
+	VkSemaphore imageAvailable;
+	VkSemaphore renderFinished;
+	VkFence inFlight;
+
+	void createSync();
+
 	public:
 	void destroy();
+	void draw(VkQueue graphicsQueue, VkQueue presentQueue);
 	VulkanRenderer() {}
+	void recordCommandBuffer(uint32_t image_index);
 	VulkanRenderer(SDL_Window* window, VkSurfaceKHR surface, const VulkanPhysicalDevice& physicalDevice, VkDevice device);
 };
