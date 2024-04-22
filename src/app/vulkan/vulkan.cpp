@@ -50,9 +50,8 @@ VulkanWrapper::VulkanWrapper(const App* app) : app(app) {
 
 VulkanWrapper::~VulkanWrapper() {
 	renderer.destroy();
-	device.destroy();
-
 	surface.destroy();
+	device.destroy();
 	destroyDebug();
 
 	vkDestroyInstance(instance, nullptr);
