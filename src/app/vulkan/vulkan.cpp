@@ -40,19 +40,19 @@ bool checkValidationSupport() {
 VulkanWrapper::VulkanWrapper(const App* app) : app(app) { 
 	createInstance();
 	createDebug();
-	createSurface();
+
+	surface = VulkanSurface(app->window, instance);
 	hookDevices(); 
-	
-	VulkanSwapChain swapChain(app->window, surface, physicalDevice.swapChainDetails, &device);
-	renderer = VulkanRenderer(swapChain, &device);
+
+	surface.createSwapChain(physicalDevice.swapChainDetails, &device);
+	renderer = VulkanRenderer(&surface, &device);
 }
 
 VulkanWrapper::~VulkanWrapper() {
 	renderer.destroy();
 	device.destroy();
 
-	vkDestroySurfaceKHR(instance, surface, nullptr);
-
+	surface.destroy();
 	destroyDebug();
 
 	vkDestroyInstance(instance, nullptr);
@@ -168,7 +168,7 @@ void VulkanWrapper::hookDevices() {
 	vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
 
 	for (const auto& device : devices) {
-		VulkanPhysicalDevice d(device, surface);
+		VulkanPhysicalDevice d(device, surface.ptr);
 		if (d.isSuitable()) {
 			physicalDevice = d;
 			break;
@@ -180,11 +180,4 @@ void VulkanWrapper::hookDevices() {
 	}
 
 	device = VulkanLogicDevice(physicalDevice, enableValidationLayers, validationLayers);
-}
-
-void VulkanWrapper::createSurface() {
-	bool success = SDL_Vulkan_CreateSurface(app->window, instance, &surface);
-	if (!success) {
-		throw SDLError("SDL could not create a Vulkan Surface.");
-	}
 }

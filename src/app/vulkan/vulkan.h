@@ -15,18 +15,15 @@ class VulkanWrapper {
 	VulkanPhysicalDevice physicalDevice;
 	VulkanLogicDevice device;
 
-	VkSurfaceKHR surface;
+	VulkanSurface surface;
 	VulkanRenderer renderer;
 
 	VkDebugUtilsMessengerEXT debugMessenger;
 
 	void createInstance();
-	void hookDevices();
-	void createSurface();
-	void createSwapChain();
-
-	
 	void createDebug();
+	void hookDevices();
+	
 	void destroyDebug();
 
 	public:

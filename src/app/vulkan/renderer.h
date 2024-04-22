@@ -3,23 +3,7 @@
 #include <vector>
 #include <SDL_video.h>
 #include "devices.h"
-
-struct VulkanSwapChain {
-	const VulkanLogicDevice* device;
-
-	VkSwapchainKHR ptr;
-	std::vector<VkImage> images;
-	std::vector<VkImageView> imageViews;
-	std::vector<VkFramebuffer> framebuffers;
-	VkFormat format;
-	VkExtent2D extents;
-
-	void createFramebuffers(VkRenderPass renderPass);
-	void createImageViews();
-	void destroy();
-	VulkanSwapChain(SDL_Window* window, VkSurfaceKHR surface, const SwapChainSupportDetails& swapChainDetails, const VulkanLogicDevice* device);
-	VulkanSwapChain() {}
-};
+#include "surface.h"
 
 struct VulkanRenderPass {
 	VkRenderPass ptr;
@@ -29,7 +13,7 @@ struct VulkanRenderPass {
 };
 
 class VulkanRenderer {
-	VulkanSwapChain swapChain;
+	VulkanSurface* surface;
 	VulkanRenderPass renderPass;
 
 	const VulkanLogicDevice* device;
@@ -50,7 +34,7 @@ class VulkanRenderer {
 
 	public:
 	VulkanRenderer() {}
-	VulkanRenderer(VulkanSwapChain swapChain, const VulkanLogicDevice* device);
+	VulkanRenderer(VulkanSurface* surface, const VulkanLogicDevice* device);
 
 	void draw();
 	void recordCommandBuffer(uint32_t image_index);
