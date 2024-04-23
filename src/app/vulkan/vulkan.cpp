@@ -45,7 +45,12 @@ VulkanWrapper::VulkanWrapper(const App* app) : app(app) {
 	hookDevices(); 
 
 	surface.createSwapChain(physicalDevice.swapChainDetails, &device);
-	renderer = VulkanRenderer(&surface, &device);
+
+	VulkanShader<VulkanVertex> vert(device.ptr, "shaders/vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
+	VulkanShader<VulkanVertex> frag(device.ptr, "shaders/frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
+	ShaderDescription<VulkanVertex> description({vert, frag});
+
+	renderer = VulkanRenderer(&surface, &device, description);
 }
 
 VulkanWrapper::~VulkanWrapper() {

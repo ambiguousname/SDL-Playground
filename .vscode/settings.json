@@ -86,6 +86,18 @@
 		"fstream": "cpp",
 		"iomanip": "cpp",
 		"shared_mutex": "cpp",
-		"expected": "cpp"
+		"expected": "cpp",
+		"bitset": "cpp",
+		"cfenv": "cpp",
+		"chrono": "cpp",
+		"complex": "cpp",
+		"csignal": "cpp",
+		"forward_list": "cpp",
+		"source_location": "cpp",
+		"strstream": "cpp",
+		"typeindex": "cpp",
+		"valarray": "cpp",
+		"variant": "cpp",
+		"*.ipp": "cpp"
 	}
 }

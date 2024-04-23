@@ -1,7 +1,6 @@
 #include "renderer.h"
 #include <algorithm>
-#include "../app.h"
-#include "shader.h"
+#include "../errors.h"
 
 VulkanRenderPass::VulkanRenderPass(VkDevice device, const VulkanSwapChain& swapChain) {
 	VkAttachmentDescription colorAttachment{};
@@ -58,18 +57,11 @@ void VulkanRenderer::destroy() {
 	vkDestroyPipeline(device->ptr, graphicsPipeline, nullptr);
 }
 
-VulkanRenderer::VulkanRenderer(VulkanSurface* surface, const VulkanLogicDevice* device) {
+void VulkanRenderer::create(VulkanSurface* surface, const VulkanLogicDevice* device, std::vector<VkPipelineShaderStageCreateInfo> shaderStages, VkPipelineVertexInputStateCreateInfo shaderVertexInfo) {
 	this->device = device;
 	this->surface = surface;
 	
 	renderPass = VulkanRenderPass(device->ptr, surface->swapChain);
-
-	VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
-	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-	vertexInputInfo.vertexBindingDescriptionCount = 0;
-	vertexInputInfo.pVertexBindingDescriptions = nullptr; // Optional
-	vertexInputInfo.vertexAttributeDescriptionCount = 0;
-	vertexInputInfo.pVertexAttributeDescriptions = nullptr; // Optional
 
 	VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
 	inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -160,15 +152,11 @@ VulkanRenderer::VulkanRenderer(VulkanSurface* surface, const VulkanLogicDevice* 
 		throw AppError("Vulkan could not create a render pipeline layout.");
 	}
 
-	VulkanShader vert(device->ptr, "shaders/vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
-	VulkanShader frag(device->ptr, "shaders/frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
-	VkPipelineShaderStageCreateInfo shaderStages[] = {vert.info, frag.info};
-
 	VkGraphicsPipelineCreateInfo pipelineInfo{};
 	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-	pipelineInfo.stageCount = 2;
-	pipelineInfo.pStages = shaderStages;
-	pipelineInfo.pVertexInputState = &vertexInputInfo;
+	pipelineInfo.stageCount = shaderStages.size();
+	pipelineInfo.pStages = shaderStages.data();
+	pipelineInfo.pVertexInputState = &shaderVertexInfo;
 	pipelineInfo.pInputAssemblyState = &inputAssembly;
 	pipelineInfo.pViewportState = &viewportState;
 	pipelineInfo.pRasterizationState = &rasterizer;
@@ -186,9 +174,6 @@ VulkanRenderer::VulkanRenderer(VulkanSurface* surface, const VulkanLogicDevice* 
 		throw AppError("Vulkan could not create graphics pipeline.");
 	}
 
-	vkDestroyShaderModule(device->ptr, frag.shaderModule, nullptr);
-	vkDestroyShaderModule(device->ptr, vert.shaderModule, nullptr);
-
 	surface->swapChain.createFramebuffers(renderPass.ptr);
 	createCommandPool();
 	createSync();
@@ -198,7 +183,7 @@ void VulkanRenderer::refreshSwapChain() {
 	vkDeviceWaitIdle(device->ptr);
 
 	VulkanSwapChain old = surface->swapChain;
-	
+
 	surface->createSwapChain(old.swapChainDetails, device, old.ptr);
 	surface->swapChain.createFramebuffers(renderPass.ptr);
 	

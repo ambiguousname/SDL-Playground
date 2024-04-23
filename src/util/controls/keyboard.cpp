@@ -25,7 +25,7 @@ bool KeyVector::pullData(ControlData& out) {
 	}
 
 	const Uint8* keyboard = SDL_GetKeyboardState(NULL);
-	out.vec = Vector2(0, 0);
+	out.vec = glm::vec2{0.f, 0.f};
 
 	// TODO: Allow for multiple inputs from different sources.
 	// Maybe prioritize axes with a greater value than those closer to zero?

@@ -1,8 +1,8 @@
 #pragma once
 
 #include "../events.h"
-#include "../vec_math.h"
 #include <map>
+#include <glm/glm.hpp>
 #include <string>
 #include <SDL_gamecontroller.h>
 #include <SDL_events.h>
@@ -20,7 +20,7 @@ struct ControlData {
 	ControlDataType type;
 	union {
 		bool boolean;
-		Vector2 vec;
+		glm::vec2 vec;
 	};
 	bool operator==(const ControlData& rhs) const;
 	bool operator!=(const ControlData& rhs) const;

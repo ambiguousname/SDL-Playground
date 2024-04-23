@@ -1,4 +1,5 @@
 #include "app.h"
+#include "errors.h"
 
 
 App::App(const char* name, Context ctx) {

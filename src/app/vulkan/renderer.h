@@ -4,6 +4,7 @@
 #include <SDL_video.h>
 #include "devices.h"
 #include "surface.h"
+#include "shader.h"
 
 struct VulkanRenderPass {
 	VkRenderPass ptr;
@@ -33,9 +34,15 @@ class VulkanRenderer {
 	void createSync();
 	void refreshSwapChain();
 
+	void create(VulkanSurface* surface, const VulkanLogicDevice* device, std::vector<VkPipelineShaderStageCreateInfo> shaderStages, VkPipelineVertexInputStateCreateInfo shaderVertexInfo);
+
 	public:
 	VulkanRenderer() {}
-	VulkanRenderer(VulkanSurface* surface, const VulkanLogicDevice* device);
+	template<typename T>
+	VulkanRenderer(VulkanSurface* surface, const VulkanLogicDevice* device, ShaderDescription<T> shaderDescription) {
+		create(surface, device, shaderDescription.getShaderStages(), shaderDescription.vertexInfo);
+		shaderDescription.destroy();
+	}
 
 	void draw();
 	void recordCommandBuffer(uint32_t image_index);

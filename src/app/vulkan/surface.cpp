@@ -1,5 +1,5 @@
 #include "surface.h"
-#include "../app.h"
+#include "../errors.h"
 #include <SDL_vulkan.h>
 
 
@@ -62,7 +62,7 @@ void VulkanSwapChain::createFramebuffers(VkRenderPass renderPass) {
 	}
 }
 
-VulkanSwapChain::VulkanSwapChain(VkSurfaceKHR surface, SDL_Window* window, const SwapChainSupportDetails& swapChainDetails, const VulkanLogicDevice* device, VkSwapchainKHR old = VK_NULL_HANDLE) {
+VulkanSwapChain::VulkanSwapChain(VkSurfaceKHR surface, SDL_Window* window, const SwapChainSupportDetails& swapChainDetails, const VulkanLogicDevice* device, VkSwapchainKHR old) {
 	this->device = device;
 	this->swapChainDetails = SwapChainSupportDetails(swapChainDetails);
 	VkSurfaceFormatKHR format = swapChainDetails.formats[0];
@@ -147,7 +147,7 @@ VulkanSurface::VulkanSurface(SDL_Window* window, VkInstance instance) {
 	}
 }
 
-void VulkanSurface::createSwapChain(const SwapChainSupportDetails& swapChainDetails, const VulkanLogicDevice* device, VkSwapchainKHR old = VK_NULL_HANDLE) {
+void VulkanSurface::createSwapChain(const SwapChainSupportDetails& swapChainDetails, const VulkanLogicDevice* device, VkSwapchainKHR old) {
 	swapChain = VulkanSwapChain(ptr, targetWindow, swapChainDetails, device, old);
 }
 

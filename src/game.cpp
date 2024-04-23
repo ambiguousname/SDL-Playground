@@ -2,6 +2,7 @@
 #include "util/controls/keyboard.h"
 
 using namespace std;
+using namespace glm;
 
 SDL_Rect player;
 Controller player_controller;
@@ -10,7 +11,7 @@ shared_ptr<Control> move_control;
 #include <iostream>
 void update(App& app) {
 	player_controller.update();
-	Vector2 move_val = move_control->getValue().vec;
+	vec2 move_val = move_control->getValue().vec;
 	// player.x += move_val.x;
 	// player.y += move_val.y;
 	// SDL_SetRenderDrawColor(app.renderer, 0, 0, 0, 0xff);

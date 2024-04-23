@@ -69,7 +69,7 @@ Control::Control(ControlDataType expected_out) : value{expected_out} {
 			value.boolean = false;
 			break;
 		case VECTOR2:
-			value.vec = Vector2(0.f, 0.f);
+			value.vec = glm::vec2(0.f, 0.f);
 			break;
 	}
 }
