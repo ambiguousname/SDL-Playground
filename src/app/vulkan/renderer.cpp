@@ -74,7 +74,7 @@ VulkanRenderer::VulkanRenderer(VulkanSurface* surface, const VulkanLogicDevice* 
 	VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
 	inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 	inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-	inputAssembly.primitiveRestartEnable = VK_FALSE;	
+	inputAssembly.primitiveRestartEnable = VK_FALSE;
 
 	VkViewport viewport{};
 	viewport.x = 0.0f;
@@ -194,27 +194,13 @@ VulkanRenderer::VulkanRenderer(VulkanSurface* surface, const VulkanLogicDevice* 
 	createSync();
 }
 
-void VulkanSwapChain::createFramebuffers(VkRenderPass renderPass) {
-	framebuffers.resize(imageViews.size());
+void VulkanRenderer::refreshSwapChain() {
+	vkDeviceWaitIdle(device->ptr);
+	SwapChainSupportDetails details = surface->swapChain.swapChainDetails;
+	surface->swapChain.destroy();
 
-	for (size_t i = 0; i < imageViews.size(); i++) {
-		VkImageView attachments[] = {
-			imageViews[i]
-		};
-
-		VkFramebufferCreateInfo framebufferInfo{};
-		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-		framebufferInfo.renderPass = renderPass;
-		framebufferInfo.attachmentCount = 1;
-		framebufferInfo.pAttachments = attachments;
-		framebufferInfo.width = extents.width;
-		framebufferInfo.height = extents.height;
-		framebufferInfo.layers = 1;
-
-		if (vkCreateFramebuffer(device->ptr, &framebufferInfo, nullptr, &framebuffers[i]) != VK_SUCCESS) {
-			throw AppError("Vulkan could not create a framebuffer.");
-		}
-	}
+	surface->createSwapChain(details, device);
+	surface->swapChain.createFramebuffers(renderPass.ptr);
 }
 
 void VulkanRenderer::createCommandPool() {
@@ -311,7 +297,14 @@ void VulkanRenderer::draw() {
 	vkResetFences(device->ptr, 1, &inFlight);
 
 	uint32_t image_index;
-	vkAcquireNextImageKHR(device->ptr, surface->swapChain.ptr, UINT64_MAX, imageAvailable, VK_NULL_HANDLE, &image_index);
+	VkResult result = vkAcquireNextImageKHR(device->ptr, surface->swapChain.ptr, UINT64_MAX, imageAvailable, VK_NULL_HANDLE, &image_index);
+	if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+		refreshSwapChain();
+		return;
+	} else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+		throw AppError("Vulkan failed to acquire swap chain");
+	}
+	
 	
 	vkResetCommandBuffer(commandBuffer, image_index);
 	recordCommandBuffer(image_index);

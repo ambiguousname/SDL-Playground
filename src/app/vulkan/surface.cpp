@@ -39,8 +39,32 @@ void VulkanSwapChain::createImageViews() {
 	}
 }
 
+void VulkanSwapChain::createFramebuffers(VkRenderPass renderPass) {
+	framebuffers.resize(imageViews.size());
+
+	for (size_t i = 0; i < imageViews.size(); i++) {
+		VkImageView attachments[] = {
+			imageViews[i]
+		};
+
+		VkFramebufferCreateInfo framebufferInfo{};
+		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+		framebufferInfo.renderPass = renderPass;
+		framebufferInfo.attachmentCount = 1;
+		framebufferInfo.pAttachments = attachments;
+		framebufferInfo.width = extents.width;
+		framebufferInfo.height = extents.height;
+		framebufferInfo.layers = 1;
+
+		if (vkCreateFramebuffer(device->ptr, &framebufferInfo, nullptr, &framebuffers[i]) != VK_SUCCESS) {
+			throw AppError("Vulkan could not create a framebuffer.");
+		}
+	}
+}
+
 VulkanSwapChain::VulkanSwapChain(VkSurfaceKHR surface, SDL_Window* window, const SwapChainSupportDetails& swapChainDetails, const VulkanLogicDevice* device) {
 	this->device = device;
+	this->swapChainDetails = SwapChainSupportDetails(swapChainDetails);
 	VkSurfaceFormatKHR format = swapChainDetails.formats[0];
 	for (const auto& aFormat : swapChainDetails.formats) {
 		if (aFormat.format == VK_FORMAT_B8G8R8_SRGB && aFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {

@@ -31,6 +31,7 @@ class VulkanRenderer {
 	VkFence inFlight;
 
 	void createSync();
+	void refreshSwapChain();
 
 	public:
 	VulkanRenderer() {}

@@ -6,6 +6,7 @@
 
 struct VulkanSwapChain {
 	const VulkanLogicDevice* device;
+	SwapChainSupportDetails swapChainDetails;
 
 	VkSwapchainKHR ptr;
 	std::vector<VkImage> images;
