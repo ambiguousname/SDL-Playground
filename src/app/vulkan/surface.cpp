@@ -62,7 +62,7 @@ void VulkanSwapChain::createFramebuffers(VkRenderPass renderPass) {
 	}
 }
 
-VulkanSwapChain::VulkanSwapChain(VkSurfaceKHR surface, SDL_Window* window, const SwapChainSupportDetails& swapChainDetails, const VulkanLogicDevice* device) {
+VulkanSwapChain::VulkanSwapChain(VkSurfaceKHR surface, SDL_Window* window, const SwapChainSupportDetails& swapChainDetails, const VulkanLogicDevice* device, VkSwapchainKHR old = VK_NULL_HANDLE) {
 	this->device = device;
 	this->swapChainDetails = SwapChainSupportDetails(swapChainDetails);
 	VkSurfaceFormatKHR format = swapChainDetails.formats[0];
@@ -123,8 +123,7 @@ VulkanSwapChain::VulkanSwapChain(VkSurfaceKHR surface, SDL_Window* window, const
 	createInfo.presentMode = mode;
 	createInfo.clipped = VK_TRUE;
 
-	// TODO: This needs to allow for window resizing.
-	createInfo.oldSwapchain = VK_NULL_HANDLE;
+	createInfo.oldSwapchain = old;
 
 	if (vkCreateSwapchainKHR(device->ptr, &createInfo, nullptr, &ptr) != VK_SUCCESS) {
 		throw AppError("Vulkan could not create a swap chain.");
@@ -148,8 +147,8 @@ VulkanSurface::VulkanSurface(SDL_Window* window, VkInstance instance) {
 	}
 }
 
-void VulkanSurface::createSwapChain(const SwapChainSupportDetails& swapChainDetails, const VulkanLogicDevice* device) {
-	swapChain = VulkanSwapChain(ptr, targetWindow, swapChainDetails, device);
+void VulkanSurface::createSwapChain(const SwapChainSupportDetails& swapChainDetails, const VulkanLogicDevice* device, VkSwapchainKHR old = VK_NULL_HANDLE) {
+	swapChain = VulkanSwapChain(ptr, targetWindow, swapChainDetails, device, old);
 }
 
 void VulkanSurface::destroy() {

@@ -18,7 +18,7 @@ struct VulkanSwapChain {
 	void createFramebuffers(VkRenderPass renderPass);
 	void createImageViews();
 	void destroy();
-	VulkanSwapChain(VkSurfaceKHR surface, SDL_Window* window, const SwapChainSupportDetails& swapChainDetails, const VulkanLogicDevice* device);
+	VulkanSwapChain(VkSurfaceKHR surface, SDL_Window* window, const SwapChainSupportDetails& swapChainDetails, const VulkanLogicDevice* device, VkSwapchainKHR old = VK_NULL_HANDLE);
 	VulkanSwapChain() {}
 };
 
@@ -29,6 +29,6 @@ struct VulkanSurface {
 	VkInstance instance;
 	VulkanSurface(SDL_Window* window, VkInstance instance);
 	VulkanSurface() {}
-	void createSwapChain(const SwapChainSupportDetails& swapChainDetails, const VulkanLogicDevice* device);
+	void createSwapChain(const SwapChainSupportDetails& swapChainDetails, const VulkanLogicDevice* device, VkSwapchainKHR old = VK_NULL_HANDLE);
 	void destroy();
 };

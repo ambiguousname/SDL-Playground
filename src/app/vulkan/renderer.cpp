@@ -196,11 +196,13 @@ VulkanRenderer::VulkanRenderer(VulkanSurface* surface, const VulkanLogicDevice* 
 
 void VulkanRenderer::refreshSwapChain() {
 	vkDeviceWaitIdle(device->ptr);
-	SwapChainSupportDetails details = surface->swapChain.swapChainDetails;
-	surface->swapChain.destroy();
 
-	surface->createSwapChain(details, device);
+	VulkanSwapChain old = surface->swapChain;
+	
+	surface->createSwapChain(old.swapChainDetails, device, old.ptr);
 	surface->swapChain.createFramebuffers(renderPass.ptr);
+	
+	old.destroy();
 }
 
 void VulkanRenderer::createCommandPool() {
