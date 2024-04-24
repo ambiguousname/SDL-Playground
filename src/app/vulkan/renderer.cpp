@@ -50,7 +50,10 @@ void VulkanRenderPass::destroy(VkDevice device) {
 void VulkanRenderer::destroy() {
 	for (auto o : objects) {
 		o->destroy();
+		delete o;
 	}
+	objects.clear();
+
 	vkDestroySemaphore(device->ptr, imageAvailable, nullptr);
 	vkDestroySemaphore(device->ptr, renderFinished, nullptr);
 	vkDestroyFence(device->ptr, inFlight, nullptr);
@@ -335,4 +338,13 @@ void VulkanRenderer::draw() {
 	presentInfo.pImageIndices = &image_index;
 
 	vkQueuePresentKHR(device->presentQueue, &presentInfo);
+}
+
+void VulkanRenderer::attachObject(VulkanObject* o) {
+	objects.insert(o);
+}
+
+void VulkanRenderer::removeObject(VulkanObject* o) { 
+	objects.erase(o);
+	delete o; 
 }

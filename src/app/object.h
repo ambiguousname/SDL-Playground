@@ -8,5 +8,5 @@ class Object {
 	public:
 	Object(App& app);
 	Object() {}
-	~Object();
+	void destroy();
 };

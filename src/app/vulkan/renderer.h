@@ -7,6 +7,7 @@
 #include "shader.h"
 #include "object.h"
 #include "helper.h"
+#include <unordered_set>
 
 struct VulkanRenderPass {
 	VkRenderPass ptr;
@@ -37,7 +38,7 @@ class VulkanRenderer {
 	VkSemaphore renderFinished;
 	VkFence inFlight;
 
-	std::vector<VulkanObject*> objects;
+	std::unordered_set<VulkanObject*> objects;
 
 	void createSync();
 	void refreshSwapChain();
@@ -58,7 +59,8 @@ class VulkanRenderer {
 		shaderDescription.destroy();
 	}
 
-	void attachObject(VulkanObject* o) { objects.push_back(o); }
+	void attachObject(VulkanObject* o);
+	void removeObject(VulkanObject* o);
 
 	void draw();
 	void recordCommandBuffer(uint32_t image_index);
