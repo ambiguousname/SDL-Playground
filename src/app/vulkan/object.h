@@ -9,6 +9,9 @@ struct VulkanObject {
 	VkBuffer vertexBuffer;
 	VkDeviceMemory vertexBufferMemory;
 
+	VkBuffer indexBuffer;
+	VkDeviceMemory indexBufferMemory;
+
 	const VulkanLogicDevice* device;
 	VulkanObject(VulkanRenderer* renderer);
 	void destroy();
