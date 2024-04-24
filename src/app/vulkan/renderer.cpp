@@ -48,6 +48,8 @@ void VulkanRenderPass::destroy(VkDevice device) {
 }
 
 void VulkanRenderer::destroy() {
+	obj.destroy();
+
 	vkDestroySemaphore(device->ptr, imageAvailable, nullptr);
 	vkDestroySemaphore(device->ptr, renderFinished, nullptr);
 	vkDestroyFence(device->ptr, inFlight, nullptr);
@@ -249,7 +251,7 @@ void VulkanRenderer::recordCommandBuffer(uint32_t image_index) {
 	scissor.extent = surface->swapChain.extents;
 	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-	vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+	obj.draw(commandBuffer);
 
 	vkCmdEndRenderPass(commandBuffer);
 

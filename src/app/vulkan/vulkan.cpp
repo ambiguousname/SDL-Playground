@@ -51,6 +51,7 @@ VulkanWrapper::VulkanWrapper(const App* app) : app(app) {
 	ShaderDescription<VulkanVertex> description({vert, frag});
 
 	renderer = VulkanRenderer(&surface, &device, description);
+	renderer.obj = VulkanObject(device.ptr, physicalDevice.memoryProperties);
 }
 
 VulkanWrapper::~VulkanWrapper() {

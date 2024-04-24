@@ -7,6 +7,7 @@ VulkanPhysicalDevice::VulkanPhysicalDevice(VkPhysicalDevice device, VkSurfaceKHR
 	ptr = device;
 	vkGetPhysicalDeviceProperties(device, &properties);
 	vkGetPhysicalDeviceFeatures(device, &features);
+	vkGetPhysicalDeviceMemoryProperties(device, &memoryProperties);
 
 	std::cout << "Found " << properties.deviceName << std::endl;
 

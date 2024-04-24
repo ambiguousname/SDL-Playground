@@ -85,6 +85,7 @@ struct VulkanShader {
 template<VertexDescription T = VulkanVertex>
 struct ShaderDescription {
 	ShaderDescription(std::vector<VulkanShader<T>> shaders) : shaders(shaders) {
+		vertexInfo = VkPipelineVertexInputStateCreateInfo{};
 		vertexInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 
 		std::vector<VkVertexInputBindingDescription> bindings(T::getBindingDescriptions());

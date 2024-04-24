@@ -5,6 +5,7 @@
 #include "devices.h"
 #include "surface.h"
 #include "shader.h"
+#include "object.h"
 
 struct VulkanRenderPass {
 	VkRenderPass ptr;
@@ -20,6 +21,7 @@ class VulkanRenderer {
 	const VulkanLogicDevice* device;
 	
 	VkPipelineLayout pipelineLayout;
+	// TODO: There should be one pipeline per set of shaders.
 	VkPipeline graphicsPipeline;
 
 	VkCommandPool commandPool;
@@ -37,6 +39,7 @@ class VulkanRenderer {
 	void create(VulkanSurface* surface, const VulkanLogicDevice* device, std::vector<VkPipelineShaderStageCreateInfo> shaderStages, VkPipelineVertexInputStateCreateInfo shaderVertexInfo);
 
 	public:
+	VulkanObject obj;
 	VulkanRenderer() {}
 	template<typename T>
 	VulkanRenderer(VulkanSurface* surface, const VulkanLogicDevice* device, ShaderDescription<T> shaderDescription) {

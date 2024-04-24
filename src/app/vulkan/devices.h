@@ -21,6 +21,7 @@ struct VulkanPhysicalDevice {
 	VkPhysicalDevice ptr = VK_NULL_HANDLE;
 	VkPhysicalDeviceProperties properties;
 	VkPhysicalDeviceFeatures features;
+	VkPhysicalDeviceMemoryProperties memoryProperties;
 	QueueFamilyIndices indices;
 	SwapChainSupportDetails swapChainDetails;
 
