@@ -50,11 +50,10 @@ VulkanWrapper::VulkanWrapper(const App* app) : app(app) {
 	VulkanShader<VulkanVertex> frag(device.ptr, "shaders/frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
 	ShaderDescription<VulkanVertex> description({vert, frag});
 
-	renderer = VulkanRenderer(&surface, &device, description);
-	renderer.obj = VulkanObject(device.ptr, physicalDevice.memoryProperties);
+	renderer = VulkanRenderer(&surface, &device, &physicalDevice, description);
 }
 
-VulkanWrapper::~VulkanWrapper() {
+void VulkanWrapper::destroy() {
 	renderer.destroy();
 	surface.destroy();
 	device.destroy();

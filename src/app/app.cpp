@@ -59,4 +59,21 @@ void App::update(void (*update)(App&)) {
 			break;
 		}
 	}
+	// Destroy before destructors, since we want a certain order.
+	switch(context) {
+		case VULKAN:
+			vulkanInstance->destroy();
+		break;
+	}
+}
+
+void* App::getRenderer() {
+	switch (context) {
+		case VULKAN:
+			return (void*)vulkanInstance->getRenderer();
+		break;
+		case HARDWARE_2D:
+			return (void*)sdlRenderer;
+	}
+	throw AppError("No renderer found.");
 }

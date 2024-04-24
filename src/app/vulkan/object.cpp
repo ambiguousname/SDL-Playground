@@ -1,4 +1,5 @@
 #include "object.h"
+#include "helper.h"
 
 const std::vector<VulkanVertex> vertices = {
     {{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
@@ -6,59 +7,34 @@ const std::vector<VulkanVertex> vertices = {
     {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
 };
 
-VulkanObject::VulkanObject(VkDevice device, VkPhysicalDeviceMemoryProperties memoryProperties) {
-	this->device = device;
+VulkanObject::VulkanObject(VulkanRenderer* renderer) {
+	VkBuffer stagingBuffer;
+	VkDeviceMemory stagingBufferMemory;
 
-	VkBufferCreateInfo bufferInfo{};
-	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	bufferInfo.size = sizeof(vertices[0]) * vertices.size();
-	bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-	bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-	bufferInfo.flags = 0;
+	this->device = renderer->getDevice();
+	const VulkanPhysicalDevice* physicalDevice = renderer->getPhysicalDevice();
 
-	if (vkCreateBuffer(device, &bufferInfo, nullptr, &vertexBuffer) != VK_SUCCESS) {
-		throw AppError("Vulkan could not create vertex buffer.");
-	}
-	
-	VkMemoryRequirements memRequirements;
-	vkGetBufferMemoryRequirements(device, vertexBuffer, &memRequirements);
-
-	VkMemoryAllocateInfo allocInfo{};
-	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-	allocInfo.allocationSize = memRequirements.size;
-
-	uint32_t type = 0;
-	bool typeFound = false;
-	uint32_t filter = (VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-	
-	for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++) {
-		if ((memRequirements.memoryTypeBits & (i << 1)) && (filter & memoryProperties.memoryTypes[i].propertyFlags) ==  filter) {
-			type = i;
-			typeFound = true;
-			break;
-		}
-	}
-	if (!typeFound) {
-		throw AppError("Could not find memory type to allocate object vertex buffer.");
-	}
-
-	allocInfo.memoryTypeIndex = type;
-
-	if (vkAllocateMemory(device, &allocInfo, nullptr, &vertexBufferMemory) != VK_SUCCESS) {
-		throw AppError("Vulkan could not allocate memory for object vertex buffer.");
-	}
-
-	vkBindBufferMemory(device, vertexBuffer, vertexBufferMemory, 0);
+	VkDeviceSize size = sizeof(vertices[0]) * vertices.size();
+	VulkanHelper::createBuffer(device->ptr, physicalDevice, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, (VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), stagingBuffer, stagingBufferMemory);
 
 	void* data;
-	vkMapMemory(device, vertexBufferMemory, 0, bufferInfo.size, 0, &data);
-	memcpy(data, vertices.data(), (size_t) bufferInfo.size);
-	vkUnmapMemory(device, vertexBufferMemory);
+	vkMapMemory(device->ptr, stagingBufferMemory, 0, size, 0, &data);
+	memcpy(data, vertices.data(), (size_t) size);
+	vkUnmapMemory(device->ptr, stagingBufferMemory);
+
+	VulkanHelper::createBuffer(device->ptr, physicalDevice, size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
+	
+	VulkanHelper::copyBuffer(device, renderer->getCommandPool(), stagingBuffer, vertexBuffer, size);
+
+	vkDestroyBuffer(device->ptr, stagingBuffer, nullptr);
+	vkFreeMemory(device->ptr, stagingBufferMemory, nullptr);
+
+	renderer->attachObject(this);
 }
 
 void VulkanObject::destroy() {
-	vkDestroyBuffer(device, vertexBuffer, nullptr);
-	vkFreeMemory(device, vertexBufferMemory, nullptr);
+	vkDestroyBuffer(device->ptr, vertexBuffer, nullptr);
+	vkFreeMemory(device->ptr, vertexBufferMemory, nullptr);
 }
 
 void VulkanObject::draw(VkCommandBuffer buffer) {

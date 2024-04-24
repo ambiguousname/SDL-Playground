@@ -27,7 +27,10 @@ class VulkanWrapper {
 	void destroyDebug();
 
 	public:
-	~VulkanWrapper();
+	const VulkanLogicDevice* getDevice() const { return &device; }
+	VulkanRenderer* getRenderer() { return &renderer; }
+
+	void destroy();
 	void draw() { renderer.draw(); vkDeviceWaitIdle(device.ptr);  }
 	VulkanWrapper(const App* app);
 };

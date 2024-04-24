@@ -16,7 +16,6 @@ class App {
 	Context context;
 
 	friend class VulkanWrapper;
-	friend class OpenGLWrapper;
 
 	public:
 	const char* name;
@@ -26,6 +25,8 @@ class App {
 		VulkanWrapper* vulkanInstance;
 	};
 	
+	const Context getContext() const { return context; }
+	void* getRenderer();
 	App(const char* name, Context ctx);
 	~App();
 	void update(void (*)(App&));

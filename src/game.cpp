@@ -1,5 +1,6 @@
 #include "game.h"
 #include "util/controls/keyboard.h"
+#include "app/object.h"
 
 using namespace std;
 using namespace glm;
@@ -7,6 +8,7 @@ using namespace glm;
 SDL_Rect player;
 Controller player_controller;
 shared_ptr<Control> move_control;
+Object test;
 
 #include <iostream>
 void update(App& app) {
@@ -22,6 +24,7 @@ void update(App& app) {
 }
 
 void game(App& app) {
+	test = Object(app);
 	player = SDL_Rect{10, 10, 10, 10};
 	player_controller = Controller {};
 	const char* keys[4] = {"W", "S", "A", "D"};

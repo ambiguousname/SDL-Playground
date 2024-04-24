@@ -48,8 +48,9 @@ void VulkanRenderPass::destroy(VkDevice device) {
 }
 
 void VulkanRenderer::destroy() {
-	obj.destroy();
-
+	for (auto o : objects) {
+		o->destroy();
+	}
 	vkDestroySemaphore(device->ptr, imageAvailable, nullptr);
 	vkDestroySemaphore(device->ptr, renderFinished, nullptr);
 	vkDestroyFence(device->ptr, inFlight, nullptr);
@@ -251,7 +252,9 @@ void VulkanRenderer::recordCommandBuffer(uint32_t image_index) {
 	scissor.extent = surface->swapChain.extents;
 	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-	obj.draw(commandBuffer);
+	for (auto o : objects) {
+		o->draw(commandBuffer);
+	}
 
 	vkCmdEndRenderPass(commandBuffer);
 
@@ -282,6 +285,9 @@ void VulkanRenderer::createSync() {
 }
 
 void VulkanRenderer::draw() {
+	if (objects.size() < 0) {
+		return;
+	}
 	vkWaitForFences(device->ptr, 1, &inFlight, VK_TRUE, UINT64_MAX);
 	vkResetFences(device->ptr, 1, &inFlight);
 

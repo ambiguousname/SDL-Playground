@@ -6,6 +6,7 @@
 #include "surface.h"
 #include "shader.h"
 #include "object.h"
+#include "helper.h"
 
 struct VulkanRenderPass {
 	VkRenderPass ptr;
@@ -14,11 +15,14 @@ struct VulkanRenderPass {
 	void destroy(VkDevice device);
 };
 
+class VulkanObject;
+
 class VulkanRenderer {
 	VulkanSurface* surface;
 	VulkanRenderPass renderPass;
 
 	const VulkanLogicDevice* device;
+	const VulkanPhysicalDevice* physicalDevice;
 	
 	VkPipelineLayout pipelineLayout;
 	// TODO: There should be one pipeline per set of shaders.
@@ -33,19 +37,28 @@ class VulkanRenderer {
 	VkSemaphore renderFinished;
 	VkFence inFlight;
 
+	std::vector<VulkanObject*> objects;
+
 	void createSync();
 	void refreshSwapChain();
 
 	void create(VulkanSurface* surface, const VulkanLogicDevice* device, std::vector<VkPipelineShaderStageCreateInfo> shaderStages, VkPipelineVertexInputStateCreateInfo shaderVertexInfo);
 
 	public:
-	VulkanObject obj;
+	const VulkanLogicDevice* getDevice() const { return device; }
+	const VulkanPhysicalDevice* getPhysicalDevice() const { return physicalDevice; }
+	const VkCommandPool getCommandPool() const { return commandPool; }
+
 	VulkanRenderer() {}
+	
 	template<typename T>
-	VulkanRenderer(VulkanSurface* surface, const VulkanLogicDevice* device, ShaderDescription<T> shaderDescription) {
+	VulkanRenderer(VulkanSurface* surface, const VulkanLogicDevice* device, const VulkanPhysicalDevice* physicalDevice, ShaderDescription<T> shaderDescription) {
+		this->physicalDevice = physicalDevice;
 		create(surface, device, shaderDescription.getShaderStages(), shaderDescription.vertexInfo);
 		shaderDescription.destroy();
 	}
+
+	void attachObject(VulkanObject* o) { objects.push_back(o); }
 
 	void draw();
 	void recordCommandBuffer(uint32_t image_index);
