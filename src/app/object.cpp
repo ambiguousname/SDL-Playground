@@ -33,7 +33,7 @@ void Object::destroy() {
 	if (inner != nullptr) {
 		switch (context) {
 			case VULKAN:
-				((VulkanRenderer*)renderer)->removeObject((VulkanObject*)inner);
+				((VulkanObject*)inner)->parentPipeline->removeObject((VulkanObject*)inner);
 			break;
 			default:
 				throw AppError("Context does not support object rendering. This should be unreachable, as we've reached the object destructor.");

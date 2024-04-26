@@ -14,7 +14,7 @@ const std::vector<uint16_t> indices = {
 
 // TODO: Multiple created objects need to be made into one allocation.
 // Indices should also be merged into the same buffer as an index.
-VulkanObject::VulkanObject(VulkanPipeline* pipeline, const VulkanLogicDevice* device, const VulkanPhysicalDevice* physicalDevice, VkCommandPool commandPool) : device(device) {
+VulkanObject::VulkanObject(VulkanPipeline* pipeline, const VulkanLogicDevice* device, const VulkanPhysicalDevice* physicalDevice, VkCommandPool commandPool) : device(device), parentPipeline(pipeline) {
 	VkBuffer stagingBuffer;
 	VkDeviceMemory stagingBufferMemory;
 

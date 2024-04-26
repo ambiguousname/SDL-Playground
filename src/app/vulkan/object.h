@@ -14,6 +14,8 @@ struct VulkanObject {
 	VkBuffer indexBuffer;
 	VkDeviceMemory indexBufferMemory;
 
+	VulkanPipeline* parentPipeline;
+
 	const VulkanLogicDevice* device;
 	VulkanObject(VulkanPipeline* pipeline, const VulkanLogicDevice* device, const VulkanPhysicalDevice* physicalDevice, VkCommandPool commandPool);
 	void destroy();
