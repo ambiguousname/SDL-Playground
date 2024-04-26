@@ -27,6 +27,7 @@ class VulkanWrapper {
 	void destroyDebug();
 
 	public:
+	VulkanRenderer* createRenderer();
 	const VulkanLogicDevice* getDevice() const { return &device; }
 	VulkanRenderer* getRenderer() { return &renderer; }
 

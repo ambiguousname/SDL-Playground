@@ -26,7 +26,7 @@ class App {
 	};
 	
 	const Context getContext() const { return context; }
-	void* getRenderer();
+	void* createRenderer();
 	App(const char* name, Context ctx);
 	~App();
 	void update(void (*)(App&));

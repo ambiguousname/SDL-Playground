@@ -45,8 +45,12 @@ VulkanWrapper::VulkanWrapper(const App* app) : app(app) {
 	hookDevices(); 
 
 	surface.createSwapChain(physicalDevice.swapChainDetails, &device);
+}
 
+VulkanRenderer* VulkanWrapper::createRenderer() {
+	// TODO: Modify to create default graphics pipelines.
 	renderer = VulkanRenderer(&surface, &device, &physicalDevice);
+	return &renderer;
 }
 
 void VulkanWrapper::destroy() {

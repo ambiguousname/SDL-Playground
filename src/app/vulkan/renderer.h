@@ -50,6 +50,8 @@ class VulkanRenderer {
 
 	// Take ownership of a VulkanPipeline:
 	void attachPipeline(VulkanPipeline* p);
+	void intializePipelines();
+
 	void refreshSwapChain();
 	void draw();
 	void destroy();

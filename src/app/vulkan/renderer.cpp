@@ -204,3 +204,18 @@ void VulkanRenderer::draw() {
 void VulkanRenderer::attachPipeline(VulkanPipeline* p) {
 	graphicsPipelines.push_back(p);
 }
+
+void VulkanRenderer::intializePipelines() {
+	std::vector<VkGraphicsPipelineCreateInfo> infos(graphicsPipelines.size());
+	std::vector<VkPipeline> pipelinePtrs(graphicsPipelines.size());
+	for (size_t i = 0; i < infos.size(); i++) {
+		infos[i] = graphicsPipelines[i];
+	}
+	if (vkCreateGraphicsPipelines(device->ptr, VK_NULL_HANDLE, infos.size(), infos.data(), nullptr, pipelinePtrs.data()) != VK_SUCCESS) {
+		throw AppError("Vulkan could not create graphics pipeline.");
+	}
+
+	for (size_t i = 0; i < infos.size(); i++)  {
+		graphicsPipelines[i]->ptr = pipelinePtrs[i];
+	}
+}

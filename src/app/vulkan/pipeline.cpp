@@ -1,7 +1,7 @@
 #include "pipeline.h"
 #include "../errors.h"
 
-VulkanPipeline::VulkanPipeline(VulkanRenderer* renderer, std::vector<VkPipelineShaderStageCreateInfo> shaderStages, VkPipelineVertexInputStateCreateInfo shaderVertexInfo) : surface(renderer->getSurface()), device(renderer->getDevice()) {
+void VulkanPipeline::getPipelineInfo(std::vector<VkPipelineShaderStageCreateInfo> shaderStages, VkPipelineVertexInputStateCreateInfo shaderVertexInfo) {
 	VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
 	inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 	inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
@@ -108,10 +108,10 @@ VulkanPipeline::VulkanPipeline(VulkanRenderer* renderer, std::vector<VkPipelineS
 	pipelineInfo.subpass = 0;
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
 	pipelineInfo.basePipelineIndex = -1; // Optional
+}
 
-	if (vkCreateGraphicsPipelines(device->ptr, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &ptr) != VK_SUCCESS) {
-		throw AppError("Vulkan could not create graphics pipeline.");
-	}
+VulkanPipeline::VulkanPipeline(VulkanRenderer* renderer, std::vector<VkPipelineShaderStageCreateInfo> shaderStages, VkPipelineVertexInputStateCreateInfo shaderVertexInfo) : surface(renderer->getSurface()), device(renderer->getDevice()) {
+	
 }
 
 void VulkanPipeline::destroy() {

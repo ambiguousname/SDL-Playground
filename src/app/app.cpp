@@ -15,12 +15,6 @@ App::App(const char* name, Context ctx) {
 	}
 
 	switch (ctx) {
-		case HARDWARE_2D:
-			sdlRenderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-			if (sdlRenderer == nullptr) {
-				throw SDLError("Could not create renderer.");
-			}
-			break;
 		case VULKAN:
 			vulkanInstance = new VulkanWrapper(this);
 			break;
@@ -67,13 +61,17 @@ void App::update(void (*update)(App&)) {
 	}
 }
 
-void* App::getRenderer() {
+void* App::createRenderer() {
 	switch (context) {
 		case VULKAN:
-			return (void*)vulkanInstance->getRenderer();
+			return (void*)vulkanInstance->createRenderer();
 		break;
 		case HARDWARE_2D:
-			return (void*)sdlRenderer;
+			sdlRenderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+			if (sdlRenderer == nullptr) {
+				throw SDLError("Could not create renderer.");
+			}
+			return (void*) sdlRenderer;
 	}
 	throw AppError("No renderer found.");
 }
