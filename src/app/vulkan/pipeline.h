@@ -3,13 +3,6 @@
 #include "surface.h"
 #include "object.h"
 
-struct VulkanRenderPass {
-	VkRenderPass ptr;
-	VulkanRenderPass(VkDevice device, const VulkanSwapChain& swapChain);
-	VulkanRenderPass() {}
-	void destroy(VkDevice device);
-};
-
 struct VulkanPipeline {
 	VkPipelineLayout pipelineLayout;
 	VkPipeline ptr;
@@ -19,9 +12,7 @@ struct VulkanPipeline {
 
 	std::unordered_set<VulkanObject*> objects;
 	
-	VulkanRenderPass renderPass;
-	VulkanPipeline(VulkanSurface* surface, const VulkanLogicDevice* device, std::vector<VkPipelineShaderStageCreateInfo> shaderStages, VkPipelineVertexInputStateCreateInfo shaderVertexInfo);
-	void refreshSwapChain();
+	VulkanPipeline(VulkanRenderer* renderer, std::vector<VkPipelineShaderStageCreateInfo> shaderStages, VkPipelineVertexInputStateCreateInfo shaderVertexInfo);
 	void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t image_index);
 	void destroy();
 

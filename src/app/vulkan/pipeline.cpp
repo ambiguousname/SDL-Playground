@@ -1,52 +1,7 @@
 #include "pipeline.h"
 #include "../errors.h"
 
-VulkanRenderPass::VulkanRenderPass(VkDevice device, const VulkanSwapChain& swapChain) {
-	VkAttachmentDescription colorAttachment{};
-	colorAttachment.format = swapChain.format;
-	colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-	colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-	colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-	colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-	colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-	colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-
-	VkAttachmentReference colorAttachmentRef{};
-	colorAttachmentRef.attachment = 0;
-	colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-	VkSubpassDescription subpass{};
-	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-	subpass.colorAttachmentCount = 1;
-	subpass.pColorAttachments = &colorAttachmentRef;
-
-	VkSubpassDependency dependency{};
-	dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-	dependency.dstSubpass = 0;
-	dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	dependency.srcAccessMask = 0;
-	dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-
-	VkRenderPassCreateInfo renderPassInfo{};
-	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-	renderPassInfo.attachmentCount = 1;
-	renderPassInfo.pAttachments = &colorAttachment;
-	renderPassInfo.subpassCount = 1;
-	renderPassInfo.pSubpasses = &subpass;
-	renderPassInfo.dependencyCount = 1;
-	renderPassInfo.pDependencies = &dependency;
-	if (vkCreateRenderPass(device, &renderPassInfo, nullptr, &ptr) != VK_SUCCESS) {
-		throw AppError("Vulkan could not create render pass.");
-	}
-}
-
-void VulkanRenderPass::destroy(VkDevice device) {
-	vkDestroyRenderPass(device, ptr, nullptr);
-}
-
-VulkanPipeline::VulkanPipeline(VulkanSurface* surface, const VulkanLogicDevice* device, std::vector<VkPipelineShaderStageCreateInfo> shaderStages, VkPipelineVertexInputStateCreateInfo shaderVertexInfo) : surface(surface), device(device) {
+VulkanPipeline::VulkanPipeline(VulkanRenderer* renderer, std::vector<VkPipelineShaderStageCreateInfo> shaderStages, VkPipelineVertexInputStateCreateInfo shaderVertexInfo) : surface(renderer->getSurface()), device(renderer->getDevice()) {
 	VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
 	inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 	inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
@@ -149,18 +104,14 @@ VulkanPipeline::VulkanPipeline(VulkanSurface* surface, const VulkanLogicDevice* 
 	pipelineInfo.pColorBlendState = &colorBlending;
 	pipelineInfo.pDynamicState = &dynamicState;
 	pipelineInfo.layout = pipelineLayout;
-	pipelineInfo.renderPass = renderPass.ptr;
+	pipelineInfo.renderPass = renderer->getRenderPass().ptr;
 	pipelineInfo.subpass = 0;
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
 	pipelineInfo.basePipelineIndex = -1; // Optional
 
-	renderPass = VulkanRenderPass(device->ptr, surface->swapChain);
-
 	if (vkCreateGraphicsPipelines(device->ptr, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &ptr) != VK_SUCCESS) {
 		throw AppError("Vulkan could not create graphics pipeline.");
 	}
-
-	surface->swapChain.createFramebuffers(renderPass.ptr);
 }
 
 void VulkanPipeline::destroy() {
@@ -170,47 +121,14 @@ void VulkanPipeline::destroy() {
 	}
 	objects.clear();
 
-	renderPass.destroy(device->ptr);
 	vkDestroyPipelineLayout(device->ptr, pipelineLayout, nullptr);
 	vkDestroyPipeline(device->ptr, ptr, nullptr);
-}
-
-
-void VulkanPipeline::refreshSwapChain() {
-	vkDeviceWaitIdle(device->ptr);
-
-	VulkanSwapChain old = surface->swapChain;
-
-	surface->createSwapChain(old.swapChainDetails, device, old.ptr);
-	surface->swapChain.createFramebuffers(renderPass.ptr);
-	
-	old.destroy();
 }
 
 void VulkanPipeline::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t image_index) {
 	if (objects.size() < 0) {
 		return;
 	}
-	VkCommandBufferBeginInfo begin_info{};
-	begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-	begin_info.flags = 0;
-
-	if (vkBeginCommandBuffer(commandBuffer, &begin_info) != VK_SUCCESS) {
-		throw AppError("Vulkan could not start recording command buffer.");
-	}
-
-	VkRenderPassBeginInfo render_pass_info{};
-	render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-	render_pass_info.renderPass = renderPass.ptr;
-	render_pass_info.framebuffer = surface->swapChain.framebuffers[image_index];
-	render_pass_info.renderArea.offset = {0, 0};
-	render_pass_info.renderArea.extent = surface->swapChain.extents;
-
-	VkClearValue clearColor = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
-	render_pass_info.clearValueCount = 1;
-	render_pass_info.pClearValues = &clearColor;
-
-	vkCmdBeginRenderPass(commandBuffer, &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
 
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, ptr);
 	VkViewport viewport{};
@@ -232,10 +150,6 @@ void VulkanPipeline::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t
 	}
 
 	vkCmdEndRenderPass(commandBuffer);
-
-	if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
-		throw AppError("Vulkan could not record command buffer.");
-	}
 }
 
 

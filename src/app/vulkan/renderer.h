@@ -9,18 +9,27 @@
 #include "helper.h"
 #include "pipeline.h"
 
+struct VulkanRenderPass {
+	VkRenderPass ptr;
+	VulkanRenderPass(VkDevice device, const VulkanSwapChain& swapChain);
+	VulkanRenderPass() {}
+	void destroy(VkDevice device);
+};
+
 class VulkanRenderer {
 	VulkanSurface* surface;
 
 	const VulkanLogicDevice* device;
 	const VulkanPhysicalDevice* physicalDevice;
 	
-	std::vector<VulkanPipeline> graphicsPipelines;
+	VulkanRenderPass renderPass;
+	std::vector<VulkanPipeline*> graphicsPipelines;
 
 	VkCommandPool commandPool;
 	VkCommandBuffer commandBuffer;
 
 	void createCommandPool();
+	void recordCommandBuffers(uint32_t image_index);
 
 	VkSemaphore imageAvailable;
 	VkSemaphore renderFinished;
@@ -28,22 +37,20 @@ class VulkanRenderer {
 
 	void createSync();
 
-	void create(VulkanSurface* surface, const VulkanLogicDevice* device);
-
 	public:
 	const VulkanLogicDevice* getDevice() const { return device; }
 	const VulkanPhysicalDevice* getPhysicalDevice() const { return physicalDevice; }
 	const VkCommandPool getCommandPool() const { return commandPool; }
+	const VulkanRenderPass& getRenderPass() const { return renderPass; }
+	VulkanSurface* getSurface() const { return surface; } 
 
 	VulkanRenderer() {}
 	
-	template<typename T>
-	VulkanRenderer(const VulkanSurface* surface, const VulkanLogicDevice* device, const VulkanPhysicalDevice* physicalDevice, ShaderDescription<T> shaderDescription) {
-		this->physicalDevice = physicalDevice;
-		create(surface, device, shaderDescription.getShaderStages(), shaderDescription.vertexInfo);
-		shaderDescription.destroy();
-	}
+	VulkanRenderer(VulkanSurface* surface, const VulkanLogicDevice* device, const VulkanPhysicalDevice* physicalDevice);
 
+	// Take ownership of a VulkanPipeline:
+	void attachPipeline(VulkanPipeline* p);
+	void refreshSwapChain();
 	void draw();
 	void destroy();
 };

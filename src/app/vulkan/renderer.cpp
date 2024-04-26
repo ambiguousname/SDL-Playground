@@ -2,18 +2,68 @@
 #include <algorithm>
 #include "../errors.h"
 
+VulkanRenderPass::VulkanRenderPass(VkDevice device, const VulkanSwapChain& swapChain) {
+	VkAttachmentDescription colorAttachment{};
+	colorAttachment.format = swapChain.format;
+	colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+	colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+	colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+	VkAttachmentReference colorAttachmentRef{};
+	colorAttachmentRef.attachment = 0;
+	colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+	VkSubpassDescription subpass{};
+	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+	subpass.colorAttachmentCount = 1;
+	subpass.pColorAttachments = &colorAttachmentRef;
+
+	VkSubpassDependency dependency{};
+	dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+	dependency.dstSubpass = 0;
+	dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	dependency.srcAccessMask = 0;
+	dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+	VkRenderPassCreateInfo renderPassInfo{};
+	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+	renderPassInfo.attachmentCount = 1;
+	renderPassInfo.pAttachments = &colorAttachment;
+	renderPassInfo.subpassCount = 1;
+	renderPassInfo.pSubpasses = &subpass;
+	renderPassInfo.dependencyCount = 1;
+	renderPassInfo.pDependencies = &dependency;
+	if (vkCreateRenderPass(device, &renderPassInfo, nullptr, &ptr) != VK_SUCCESS) {
+		throw AppError("Vulkan could not create render pass.");
+	}
+}
+
+void VulkanRenderPass::destroy(VkDevice device) {
+	vkDestroyRenderPass(device, ptr, nullptr);
+}
+
 void VulkanRenderer::destroy() {
+	for (auto p : graphicsPipelines) {
+		p->destroy();
+	}
+	renderPass.destroy(device->ptr);
 	vkDestroySemaphore(device->ptr, imageAvailable, nullptr);
 	vkDestroySemaphore(device->ptr, renderFinished, nullptr);
 	vkDestroyFence(device->ptr, inFlight, nullptr);
 	vkDestroyCommandPool(device->ptr, commandPool, nullptr);
 }
 
-void VulkanRenderer::create(VulkanSurface* surface, const VulkanLogicDevice* device) {
+VulkanRenderer::VulkanRenderer(VulkanSurface* surface, const VulkanLogicDevice* device, const VulkanPhysicalDevice* physicalDevice) : surface(surface), device(device), physicalDevice(physicalDevice) {
 	this->device = device;
 	this->surface = surface;
 	
-	
+	renderPass = VulkanRenderPass(device->ptr, surface->swapChain);
+	surface->swapChain.createFramebuffers(renderPass.ptr);
 	createCommandPool();
 	createSync();
 }
@@ -61,6 +111,47 @@ void VulkanRenderer::createSync() {
 	}
 }
 
+void VulkanRenderer::refreshSwapChain() {
+	vkDeviceWaitIdle(device->ptr);
+
+	VulkanSwapChain old = surface->swapChain;
+
+	surface->createSwapChain(old.swapChainDetails, device, old.ptr);
+	surface->swapChain.createFramebuffers(renderPass.ptr);
+	
+	old.destroy();
+}
+
+void VulkanRenderer::recordCommandBuffers(uint32_t image_index) {
+	VkCommandBufferBeginInfo begin_info{};
+	begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	begin_info.flags = 0;
+
+	if (vkBeginCommandBuffer(commandBuffer, &begin_info) != VK_SUCCESS) {
+		throw AppError("Vulkan could not start recording command buffer.");
+	}
+
+	VkRenderPassBeginInfo render_pass_info{};
+	render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+	render_pass_info.renderPass = renderPass.ptr;
+	render_pass_info.framebuffer = surface->swapChain.framebuffers[image_index];
+	render_pass_info.renderArea.offset = {0, 0};
+	render_pass_info.renderArea.extent = surface->swapChain.extents;
+
+	VkClearValue clearColor = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
+	render_pass_info.clearValueCount = 1;
+	render_pass_info.pClearValues = &clearColor;
+
+	vkCmdBeginRenderPass(commandBuffer, &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
+	vkResetCommandBuffer(commandBuffer, image_index);
+	for (auto pipeline : graphicsPipelines) {
+		pipeline->recordCommandBuffer(commandBuffer, image_index);
+	}
+	if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
+		throw AppError("Vulkan could not record command buffer.");
+	}
+}
+
 void VulkanRenderer::draw() {
 	vkWaitForFences(device->ptr, 1, &inFlight, VK_TRUE, UINT64_MAX);
 	vkResetFences(device->ptr, 1, &inFlight);
@@ -69,19 +160,13 @@ void VulkanRenderer::draw() {
 	VkResult result = vkAcquireNextImageKHR(device->ptr, surface->swapChain.ptr, UINT64_MAX, imageAvailable, VK_NULL_HANDLE, &image_index);
 
 	if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-		for (auto pipeline : graphicsPipelines) {
-			pipeline.refreshSwapChain();
-		}
+		refreshSwapChain();
 		return;
 	} else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
 		throw AppError("Vulkan failed to acquire swap chain");
 	}
 	
-	
-	vkResetCommandBuffer(commandBuffer, image_index);
-	for (auto pipeline : graphicsPipelines) {
-		pipeline.recordCommandBuffer(commandBuffer, image_index);
-	}
+	recordCommandBuffers(image_index);
 
 	VkSubmitInfo submit_info{};
 	submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -114,4 +199,8 @@ void VulkanRenderer::draw() {
 	presentInfo.pImageIndices = &image_index;
 
 	vkQueuePresentKHR(device->presentQueue, &presentInfo);
+}
+
+void VulkanRenderer::attachPipeline(VulkanPipeline* p) {
+	graphicsPipelines.push_back(p);
 }

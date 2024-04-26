@@ -14,12 +14,9 @@ const std::vector<uint16_t> indices = {
 
 // TODO: Multiple created objects need to be made into one allocation.
 // Indices should also be merged into the same buffer as an index.
-VulkanObject::VulkanObject(VulkanRenderer* renderer) {
+VulkanObject::VulkanObject(VulkanPipeline* pipeline, const VulkanLogicDevice* device, const VulkanPhysicalDevice* physicalDevice, VkCommandPool commandPool) : device(device) {
 	VkBuffer stagingBuffer;
 	VkDeviceMemory stagingBufferMemory;
-
-	this->device = renderer->getDevice();
-	const VulkanPhysicalDevice* physicalDevice = renderer->getPhysicalDevice();
 
 	VkDeviceSize size = sizeof(vertices[0]) * vertices.size();
 	VulkanHelper::createBuffer(device->ptr, physicalDevice, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, (VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT), stagingBuffer, stagingBufferMemory);
@@ -31,7 +28,6 @@ VulkanObject::VulkanObject(VulkanRenderer* renderer) {
 
 	VulkanHelper::createBuffer(device->ptr, physicalDevice, size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
 	
-	VkCommandPool commandPool = renderer->getCommandPool();
 	VulkanHelper::copyBuffer(device, commandPool, stagingBuffer, vertexBuffer, size);
 
 	vkDestroyBuffer(device->ptr, stagingBuffer, nullptr);
@@ -54,7 +50,7 @@ VulkanObject::VulkanObject(VulkanRenderer* renderer) {
 	vkDestroyBuffer(device->ptr, indexStaging, nullptr);
 	vkFreeMemory(device->ptr, indexStagingMemory, nullptr);
 
-	renderer->attachObject(this);
+	pipeline->attachObject(this);
 }
 
 void VulkanObject::destroy() {
