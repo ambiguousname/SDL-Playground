@@ -5,15 +5,28 @@
 #include <glm/glm.hpp>
 #include "../errors.h"
 
+// TODO: Shaders need to be loaded by user definition.
+
 template<class T>
 concept VertexDescription = requires {
 	{T::getBindingDescriptions()};
 	{T::getAttributeDescriptions()};
 };
 
+// template<class T>
+// concept UniformDescription = requires {
+// 	{}
+// };
+
+struct VulkanObjectMatrices {
+	glm::mat4 model;
+	glm::mat4 view;
+	glm::mat4 projection;
+};
+
 struct VulkanVertex {
 	glm::vec2 pos;
-	glm::vec3 color;	
+	glm::vec3 color;
 
 	static std::vector<VkVertexInputBindingDescription> getBindingDescriptions() {
 		VkVertexInputBindingDescription bindingDescription{};
@@ -54,6 +67,13 @@ struct VulkanShader {
 			std::string error("Could not open " + file_to_load);
 			throw AppError(error);
 		}
+
+		VkDescriptorSetLayoutBinding uboLayoutBinding{};
+		uboLayoutBinding.binding = 0;
+		uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		uboLayoutBinding.descriptorCount = 1;
+		uboLayoutBinding.stageFlags = stage;
+		uboLayoutBinding.pImmutableSamplers = nullptr; // Optional
 
 		size_t fileSize = (size_t) file.tellg();
 		bytes.resize(fileSize);

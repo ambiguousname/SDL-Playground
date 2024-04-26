@@ -12,6 +12,8 @@ const std::vector<uint16_t> indices = {
     0, 1, 2, 2, 3, 0
 };
 
+// TODO: Multiple created objects need to be made into one allocation.
+// Indices should also be merged into the same buffer as an index.
 VulkanObject::VulkanObject(VulkanRenderer* renderer) {
 	VkBuffer stagingBuffer;
 	VkDeviceMemory stagingBufferMemory;
