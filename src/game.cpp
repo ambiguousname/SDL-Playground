@@ -6,7 +6,6 @@ using namespace std;
 using namespace glm;
 
 void Main::preload() {
-	test = Object(app);
 	player = SDL_Rect{10, 10, 10, 10};
 	player_controller = Controller {};
 	const char* keys[4] = {"W", "S", "A", "D"};
@@ -15,6 +14,9 @@ void Main::preload() {
 	move_control = player_controller.getControl("move");
 }
 
+void Main::create() {
+	test = Object(app);
+}
 
 void Main::update() {
 	player_controller.update();

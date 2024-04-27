@@ -7,12 +7,12 @@ class AppError : public std::exception {
 
 	public:
 	
-	explicit AppError(const char* message) : _msg(message) {}
-	explicit AppError(std::string& message) : _msg(message) {}
+	explicit AppError(const char* message) : _msg(std::string("Melketh Error: ") + std::string(message)) {}
+	explicit AppError(std::string& message) : _msg(std::string("Melketh Error: " + message)) {}
 	virtual ~AppError() noexcept {}
 
 	virtual const char* what() const throw() {
-		return std::string("Mekleth Error: " + _msg).c_str();
+		return _msg.c_str();
 	}
 };
 

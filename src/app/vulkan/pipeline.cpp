@@ -116,7 +116,6 @@ VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
 void VulkanPipeline::destroy() {
 	for (auto o : objects) {
 		o->destroy();
-		delete o;
 	}
 	objects.clear();
 
@@ -159,5 +158,4 @@ void VulkanPipeline::attachObject(VulkanObject* o) {
 
 void VulkanPipeline::removeObject(VulkanObject* o) { 
 	objects.erase(o);
-	delete o; 
 }

@@ -1,9 +1,8 @@
 #pragma once
 #include <vulkan/vulkan.hpp>
+#include <unordered_set>
 #include "shader.h"
-#include "pipeline.h"
-
-struct VulkanPipeline;
+#include "devices.h"
 
 struct VulkanObject {
 	VkBuffer vertexBuffer;
@@ -12,10 +11,12 @@ struct VulkanObject {
 	VkBuffer indexBuffer;
 	VkDeviceMemory indexBufferMemory;
 
-	VulkanPipeline* parentPipeline;
-
 	const VulkanLogicDevice* device;
-	VulkanObject(VulkanPipeline* pipeline, const VulkanLogicDevice* device, const VulkanPhysicalDevice* physicalDevice, VkCommandPool commandPool);
+	VulkanObject(const VulkanLogicDevice* device, const VulkanPhysicalDevice* physicalDevice, VkCommandPool commandPool);
 	void destroy();
 	void draw(VkCommandBuffer buffer);
+
+	bool operator==(VulkanObject const* rhs) {
+		return rhs->indexBuffer == indexBuffer && rhs->indexBufferMemory == indexBufferMemory && rhs->vertexBuffer == vertexBuffer && rhs->vertexBufferMemory == vertexBufferMemory;
+	}
 };

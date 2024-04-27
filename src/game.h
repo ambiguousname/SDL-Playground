@@ -14,5 +14,6 @@ class Main : public IScene {
 	public:
 	Main(App& app) : IScene(app) {}
 	void preload() override;
+	void create() override;
 	void update() override;
 };

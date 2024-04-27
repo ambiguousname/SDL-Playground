@@ -22,6 +22,7 @@ class SceneManager {
 			delete activeScene;
 		}
 		activeScene = new T(*app);
+		initializeScene();
 	}
 
 	void update();

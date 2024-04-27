@@ -1,12 +1,11 @@
 #pragma once
 #include <vulkan/vulkan.hpp>
-#include <unordered_set>
+#include <unordered_map>
 #include "surface.h"
 #include "object.h"
 #include "renderer.h"
 
 class VulkanRenderer;
-struct VulkanObject;
 
 // FIXME: This is way too specific to graphics pipelines.
 struct VulkanPipeline {
