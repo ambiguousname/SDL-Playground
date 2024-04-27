@@ -1,10 +1,8 @@
 #pragma once
 #include <vulkan/vulkan.hpp>
 #include "shader.h"
-#include "renderer.h"
 #include "pipeline.h"
 
-class VulkanRenderer;
 struct VulkanPipeline;
 
 struct VulkanObject {

@@ -49,7 +49,8 @@ void VulkanRenderPass::destroy(VkDevice device) {
 
 void VulkanRenderer::destroy() {
 	for (auto p : graphicsPipelines) {
-		p.second.destroy();
+		p.second->destroy();
+		delete p.second;
 	}
 	renderPass.destroy(device->ptr);
 	vkDestroySemaphore(device->ptr, imageAvailable, nullptr);
@@ -142,7 +143,7 @@ void VulkanRenderer::recordCommandBuffers(uint32_t image_index) {
 	vkCmdBeginRenderPass(commandBuffer, &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
 	vkResetCommandBuffer(commandBuffer, image_index);
 	for (auto pipeline : graphicsPipelines) {
-		pipeline.second.recordCommandBuffer(commandBuffer, image_index);
+		pipeline.second->recordCommandBuffer(commandBuffer, image_index);
 	}
 	if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
 		throw AppError("Vulkan could not record command buffer.");
@@ -198,21 +199,21 @@ void VulkanRenderer::draw() {
 	vkQueuePresentKHR(device->presentQueue, &presentInfo);
 }
 
-void VulkanRenderer::attachPendingGraphicsPipeline(VulkanPipeline pipeline) {
-	graphicsPipelines.insert(std::pair(pipeline.description_hash, pipeline));
+void VulkanRenderer::attachPendingGraphicsPipeline(VulkanPipeline* pipeline) {
+	graphicsPipelines.insert(std::pair(pipeline->description_hash, pipeline));
 }
 
 void VulkanRenderer::intializePipelines() {
 	std::vector<VkGraphicsPipelineCreateInfo> creation(graphicsPipelines.size());
 	std::vector<VkPipeline> pipelinePtrs(graphicsPipelines.size());
 	for (size_t i = 0; i < graphicsPipelines.size(); i++) {
-		creation[i] = graphicsPipelines[i].createInfo;
+		creation[i] = graphicsPipelines[i]->createInfo;
 	}
 	if (vkCreateGraphicsPipelines(device->ptr, VK_NULL_HANDLE, creation.size(), creation.data(), nullptr, pipelinePtrs.data()) != VK_SUCCESS) {
 		throw AppError("Vulkan could not create graphics pipeline.");
 	}
 
 	for (size_t i = 0; i < graphicsPipelines.size(); i++)  {
-		graphicsPipelines[i].attachPipelineInstance(pipelinePtrs[i]);
+		graphicsPipelines[i]->attachPipelineInstance(pipelinePtrs[i]);
 	}
 }

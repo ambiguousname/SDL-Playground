@@ -11,6 +11,7 @@ enum Context {
 
 class VulkanWrapper;
 class VulkanRenderer;
+class SceneManager;
 
 struct AppConfig {
 	std::string name = "Game";
@@ -25,7 +26,7 @@ class App {
 
 	public:
 	std::string name;
-	SceneManager sceneManager;
+	SceneManager& sceneManager;
 
 	union {
 		SDL_Renderer* sdlRenderer;

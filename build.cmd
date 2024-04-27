@@ -1,3 +1,3 @@
 ninja -C build
-cd bin
+cd build/bin
 SDLPlayground.exe

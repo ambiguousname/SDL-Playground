@@ -1,7 +1,7 @@
 #include "app.h"
 #include "errors.h"
 
-App::App(AppConfig config) : sceneManager(SceneManager(this)) {
+App::App(AppConfig config) : sceneManager(*new SceneManager(this)) {
 	this->name = config.name;
 	this->context = config.context;
 
@@ -34,6 +34,7 @@ App::App(AppConfig config) : sceneManager(SceneManager(this)) {
 }
 
 App::~App() {
+	delete &sceneManager;
 	SDL_DestroyWindow(window);
 	switch(context) {
 		case HARDWARE_2D:
@@ -76,4 +77,5 @@ void* App::getRenderer() {
 			return (void*)sdlRenderer;
 			break;
 	}
+	return nullptr;
 }

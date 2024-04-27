@@ -4,6 +4,9 @@
 
 class App;
 
+template<class T>
+concept Scene = std::is_base_of<IScene, T>::value;
+
 class SceneManager {
 	IScene* activeScene = nullptr;
 	App* app;
@@ -13,7 +16,7 @@ class SceneManager {
 	public:
 	SceneManager(App* app);
 	~SceneManager();
-	template<class T>
+	template<Scene T>
 	void loadScene() {
 		if (activeScene != nullptr) {
 			delete activeScene;

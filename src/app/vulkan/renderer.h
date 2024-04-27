@@ -17,6 +17,8 @@ struct VulkanRenderPass {
 	void destroy(VkDevice device);
 };
 
+struct VulkanPipeline;
+
 class VulkanRenderer {
 	VulkanSurface* surface;
 
@@ -24,7 +26,7 @@ class VulkanRenderer {
 	const VulkanPhysicalDevice* physicalDevice;
 	
 	VulkanRenderPass renderPass;
-	std::unordered_map<size_t, VulkanPipeline> graphicsPipelines;
+	std::unordered_map<size_t, VulkanPipeline*> graphicsPipelines;
 
 	VkCommandPool commandPool;
 	VkCommandBuffer commandBuffer;
@@ -44,14 +46,14 @@ class VulkanRenderer {
 	const VkCommandPool getCommandPool() const { return commandPool; }
 	const VulkanRenderPass& getRenderPass() const { return renderPass; }
 	VulkanSurface* getSurface() const { return surface; } 
-	VulkanPipeline* getPipeline(size_t hash) { if (auto find = graphicsPipelines.find(hash); find != graphicsPipelines.end()) { return &find->second; } else { return nullptr; } }
+	VulkanPipeline* getPipeline(size_t hash) { if (auto find = graphicsPipelines.find(hash); find != graphicsPipelines.end()) { return find->second; } else { return nullptr; } }
 
 	VulkanRenderer() {}
 	
 	VulkanRenderer(VulkanSurface* surface, const VulkanLogicDevice* device, const VulkanPhysicalDevice* physicalDevice);
 
 	// Take ownership of a VulkanPipeline:
-	void attachPendingGraphicsPipeline(VulkanPipeline pipeline);
+	void attachPendingGraphicsPipeline(VulkanPipeline* pipeline);
 	void intializePipelines();
 
 	void refreshSwapChain();

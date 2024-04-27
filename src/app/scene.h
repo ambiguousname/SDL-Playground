@@ -1,4 +1,7 @@
 #pragma once
+#include "app.h"
+
+class App;
 
 class IScene {
 	protected:
