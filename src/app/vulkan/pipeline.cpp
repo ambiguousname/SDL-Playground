@@ -1,11 +1,14 @@
 #include "pipeline.h"
 #include "../errors.h"
 
-void VulkanPipeline::getPipelineInfo(std::vector<VkPipelineShaderStageCreateInfo> shaderStages, VkPipelineVertexInputStateCreateInfo shaderVertexInfo) {
+VkGraphicsPipelineCreateInfo VulkanPipeline::getPipelineInfo(VulkanRenderer* renderer, std::vector<VkPipelineShaderStageCreateInfo> shaderStages, VkPipelineVertexInputStateCreateInfo shaderVertexInfo) {
 	VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
 	inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 	inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 	inputAssembly.primitiveRestartEnable = VK_FALSE;
+
+	VulkanSurface* surface = renderer->getSurface();
+	const VulkanLogicDevice* device = renderer->getDevice(); 
 
 	VkViewport viewport{};
 	viewport.x = 0.0f;
@@ -103,14 +106,16 @@ void VulkanPipeline::getPipelineInfo(std::vector<VkPipelineShaderStageCreateInfo
 	pipelineInfo.pDepthStencilState = nullptr; // Optional
 	pipelineInfo.pColorBlendState = &colorBlending;
 	pipelineInfo.pDynamicState = &dynamicState;
-	pipelineInfo.layout = pipelineLayout;
+	pipelineInfo.layout = pipelineLayout; // TODO: Make this static function part of the constructor? Then attach the ptr later.
 	pipelineInfo.renderPass = renderer->getRenderPass().ptr;
 	pipelineInfo.subpass = 0;
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
 	pipelineInfo.basePipelineIndex = -1; // Optional
+
+	return pipelineInfo;
 }
 
-VulkanPipeline::VulkanPipeline(VulkanRenderer* renderer, std::vector<VkPipelineShaderStageCreateInfo> shaderStages, VkPipelineVertexInputStateCreateInfo shaderVertexInfo) : surface(renderer->getSurface()), device(renderer->getDevice()) {
+VulkanPipeline::VulkanPipeline(VulkanRenderer* renderer, VkPipeline ptr, VkPipelineLayout layout) : surface(renderer->getSurface()), device(renderer->getDevice()), ptr(ptr), pipelineLayout(layout) {
 	
 }
 

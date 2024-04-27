@@ -1,25 +1,36 @@
 #include "app.h"
 #include "errors.h"
 
-
-App::App(const char* name, Context ctx) {
-	this->name = name;
-	this->context = ctx;
+App::App(AppConfig config) : sceneManager(SceneManager(this)) {
+	this->name = config.name;
+	this->context = config.context;
 
 	if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
 		throw AppError("Could not init SDL.");
 	}
-	window = SDL_CreateWindow(name, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, SDL_WINDOW_SHOWN | SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE );
-	if (window == nullptr) {
-		throw SDLError("Could not create window.");
-	}
 
-	switch (ctx) {
+	switch (context) {
 		case VULKAN:
 			vulkanInstance = new VulkanWrapper(this);
 			break;
 	}
-	return;
+
+	window = SDL_CreateWindow(name.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, SDL_WINDOW_SHOWN | SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE );
+	if (window == nullptr) {
+		throw SDLError("Could not create window.");
+	}
+
+	switch (context) {
+		case VULKAN:
+			vulkanInstance->createRenderer();
+			break;
+		case HARDWARE_2D:
+			sdlRenderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+			if (sdlRenderer == nullptr) {
+				throw SDLError("Could not create renderer.");
+			}
+			break;
+	}
 }
 
 App::~App() {
@@ -35,7 +46,7 @@ App::~App() {
 	SDL_Quit();
 }
 
-void App::update(void (*update)(App&)) {
+void App::update() {
 	bool quit = false;
 	while(!quit) {
 		SDL_Event e;
@@ -46,7 +57,7 @@ void App::update(void (*update)(App&)) {
 			}
 		}
 		SDL_PumpEvents();
-		update(*this);
+		sceneManager.update();
 		switch(context) {
 			case VULKAN:
 				vulkanInstance->draw();
@@ -61,17 +72,13 @@ void App::update(void (*update)(App&)) {
 	}
 }
 
-void* App::createRenderer() {
+void* App::getRenderer() {
 	switch (context) {
 		case VULKAN:
-			return (void*)vulkanInstance->createRenderer();
-		break;
+			return (void*)vulkanInstance->getRenderer();
+			break;
 		case HARDWARE_2D:
-			sdlRenderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-			if (sdlRenderer == nullptr) {
-				throw SDLError("Could not create renderer.");
-			}
-			return (void*) sdlRenderer;
+			return (void*)sdlRenderer;
+			break;
 	}
-	throw AppError("No renderer found.");
 }

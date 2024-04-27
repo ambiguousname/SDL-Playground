@@ -24,6 +24,7 @@ class VulkanRenderer {
 	
 	VulkanRenderPass renderPass;
 	std::vector<VulkanPipeline*> graphicsPipelines;
+	std::vector<VkGraphicsPipelineCreateInfo> pendingGraphicsPipelines;
 
 	VkCommandPool commandPool;
 	VkCommandBuffer commandBuffer;
@@ -49,7 +50,7 @@ class VulkanRenderer {
 	VulkanRenderer(VulkanSurface* surface, const VulkanLogicDevice* device, const VulkanPhysicalDevice* physicalDevice);
 
 	// Take ownership of a VulkanPipeline:
-	void attachPipeline(VulkanPipeline* p);
+	void attachGraphicsPipelineInfo(VkGraphicsPipelineCreateInfo info);
 	void intializePipelines();
 
 	void refreshSwapChain();

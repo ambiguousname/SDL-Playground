@@ -12,7 +12,8 @@ struct VulkanPipeline {
 
 	std::unordered_set<VulkanObject*> objects;
 	
-	static void getPipelineInfo(VulkanRenderer* renderer, std::vector<VkPipelineShaderStageCreateInfo> shaderStages, VkPipelineVertexInputStateCreateInfo shaderVertexInfo);
+	static VkGraphicsPipelineCreateInfo getPipelineInfo(VulkanRenderer* renderer, std::vector<VkPipelineShaderStageCreateInfo> shaderStages, VkPipelineVertexInputStateCreateInfo shaderVertexInfo);
+	VulkanPipeline(VulkanRenderer* renderer, VkPipeline ptr, VkPipelineLayout layout);
 	void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t image_index);
 	void destroy();
 

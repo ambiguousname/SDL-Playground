@@ -2,6 +2,7 @@
 #include <SDL.h>
 #include "../util/controls/controller.h"
 #include "vulkan/vulkan.h"
+#include "scene_manager.h"
 
 enum Context {
 	VULKAN,
@@ -11,6 +12,11 @@ enum Context {
 class VulkanWrapper;
 class VulkanRenderer;
 
+struct AppConfig {
+	std::string name = "Game";
+	Context context;
+};
+
 class App {
 	SDL_Window* window;
 	Context context;
@@ -18,7 +24,8 @@ class App {
 	friend class VulkanWrapper;
 
 	public:
-	const char* name;
+	std::string name;
+	SceneManager sceneManager;
 
 	union {
 		SDL_Renderer* sdlRenderer;
@@ -26,8 +33,9 @@ class App {
 	};
 	
 	const Context getContext() const { return context; }
-	void* createRenderer();
-	App(const char* name, Context ctx);
+	void* getRenderer();
+	
+	App(AppConfig config);
 	~App();
-	void update(void (*)(App&));
+	void update();
 };
