@@ -18,6 +18,7 @@ struct VulkanRenderPass {
 };
 
 struct VulkanPipeline;
+struct VulkanPipelineInfo;
 
 class VulkanRenderer {
 	VulkanSurface* surface;
@@ -27,6 +28,7 @@ class VulkanRenderer {
 	
 	VulkanRenderPass renderPass;
 	std::unordered_map<size_t, VulkanPipeline*> graphicsPipelines;
+	std::vector<VulkanPipelineInfo*> creationInfo;
 
 	VkCommandPool commandPool;
 	VkCommandBuffer commandBuffer;
@@ -53,7 +55,7 @@ class VulkanRenderer {
 	VulkanRenderer(VulkanSurface* surface, const VulkanLogicDevice* device, const VulkanPhysicalDevice* physicalDevice);
 
 	// Take ownership of a VulkanPipeline:
-	void attachPendingGraphicsPipeline(VulkanPipeline* pipeline);
+	void attachPendingGraphicsPipeline(VulkanPipelineInfo* info);
 	void intializePipelines();
 
 	void refreshSwapChain();

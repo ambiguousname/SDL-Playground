@@ -48,6 +48,11 @@ void VulkanRenderPass::destroy(VkDevice device) {
 }
 
 void VulkanRenderer::destroy() {
+	for (auto i : creationInfo) {
+		i->destroy();
+		delete i;
+	}
+
 	for (auto p : graphicsPipelines) {
 		p.second->destroy();
 		delete p.second;
@@ -199,21 +204,24 @@ void VulkanRenderer::draw() {
 	vkQueuePresentKHR(device->presentQueue, &presentInfo);
 }
 
-void VulkanRenderer::attachPendingGraphicsPipeline(VulkanPipeline* pipeline) {
-	graphicsPipelines.insert(std::pair(pipeline->description_hash, pipeline));
+void VulkanRenderer::attachPendingGraphicsPipeline(VulkanPipelineInfo* info) {
+	creationInfo.push_back(info);
 }
 
 void VulkanRenderer::intializePipelines() {
 	std::vector<VkGraphicsPipelineCreateInfo> creation(graphicsPipelines.size());
 	std::vector<VkPipeline> pipelinePtrs(graphicsPipelines.size());
-	for (size_t i = 0; i < graphicsPipelines.size(); i++) {
-		creation[i] = graphicsPipelines[i]->createInfo;
+
+	for (size_t i = 0; i < creationInfo.size(); i++) {
+		creation[i] = creationInfo[i]->pipelineInfo;
 	}
+
 	if (vkCreateGraphicsPipelines(device->ptr, VK_NULL_HANDLE, creation.size(), creation.data(), nullptr, pipelinePtrs.data()) != VK_SUCCESS) {
 		throw AppError("Vulkan could not create graphics pipeline.");
 	}
 
-	for (size_t i = 0; i < graphicsPipelines.size(); i++)  {
-		graphicsPipelines[i]->attachPipelineInstance(pipelinePtrs[i]);
+	for (size_t i = 0; i < pipelinePtrs.size(); i++) {
+		VulkanPipeline* pipeline = new VulkanPipeline(pipelinePtrs[i]);
+		graphicsPipelines.insert(std::pair(creationInfo[i]->descriptionHash, pipeline));
 	}
 }

@@ -7,32 +7,51 @@
 
 class VulkanRenderer;
 
-// FIXME: This is way too specific to graphics pipelines.
-struct VulkanPipeline {
+// TODO: Some guides online recommend caching pipelines between runs of the application.
+struct VulkanPipelineInfo {
 	protected:
-	void createPipeline(VulkanRenderer* renderer, std::vector<VkPipelineShaderStageCreateInfo> shaderStages, VkPipelineVertexInputStateCreateInfo shaderVertexInfo);
+	void createPipelineInfo(VulkanRenderer* renderer, std::vector<VkPipelineShaderStageCreateInfo> shaderStages, VkPipelineVertexInputStateCreateInfo shaderVertexInfo);
+	
+	VkPipelineInputAssemblyStateCreateInfo inputAssembly;
+	VkViewport viewport;
+	VkRect2D scissor;
+	std::vector<VkDynamicState> dynamicStates;
+	VkPipelineDynamicStateCreateInfo dynamicState;
+	VkPipelineViewportStateCreateInfo viewportState;
+	VkPipelineRasterizationStateCreateInfo rasterizer;
+	VkPipelineMultisampleStateCreateInfo multisampling;
+	VkPipelineColorBlendAttachmentState colorBlendAttachment;
+	VkPipelineColorBlendStateCreateInfo colorBlending;
+	VkPipelineLayoutCreateInfo pipelineLayoutInfo;
+	VkPipelineLayout pipelineLayout;
 
 	public:
-	VkPipelineLayout pipelineLayout;
+	const VulkanLogicDevice* device;
+	VkGraphicsPipelineCreateInfo pipelineInfo;
+	size_t descriptionHash;
+	template<typename T>
+	VulkanPipelineInfo(VulkanRenderer* renderer, ShaderDescription<T> description) {
+		descriptionHash = typeid(T).hash_code();
+
+		createPipelineInfo(renderer, description.getShaderStages(), description.vertexInfo);
+		
+		description.destroy();
+	}
+
+	void destroy();
+};
+
+// FIXME: This is way too specific to graphics pipelines.
+struct VulkanPipeline {
+	public:
 	VkPipeline ptr = VK_NULL_HANDLE;
-	size_t description_hash;
 
 	VulkanSurface* surface;
 	const VulkanLogicDevice* device;
 
 	std::unordered_set<VulkanObject*> objects;
-
-	VkGraphicsPipelineCreateInfo createInfo;
 	
-	template<typename T>
-	VulkanPipeline(VulkanRenderer* renderer, ShaderDescription<T> description) {
-		description_hash = typeid(T).hash_code();
-
-		createPipeline(renderer, description.getShaderStages(), description.vertexInfo);
-		
-		description.destroy();
-	}
-	void attachPipelineInstance(VkPipeline ptr) { this->ptr = ptr; }
+	VulkanPipeline(VkPipeline ptr) : ptr(ptr) {}
 
 	void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t image_index);
 	void destroy();
