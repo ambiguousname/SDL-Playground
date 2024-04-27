@@ -54,7 +54,6 @@ struct VulkanVertex {
 	}
 };
 
-template<VertexDescription T>
 struct VulkanShader {
 	VkShaderModule shaderModule;
 	VkPipelineShaderStageCreateInfo info;
@@ -103,11 +102,22 @@ struct VulkanShader {
 	}
 };
 
-template<VertexDescription T>
 struct ShaderDescription {
 	std::vector<VkVertexInputBindingDescription> bindings;
 	std::vector<VkVertexInputAttributeDescription> attributes;
-	ShaderDescription(std::vector<VulkanShader<T>> shaders) : shaders(shaders) {
+	
+	std::vector<VulkanShader> shaders;
+
+	std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
+
+	VkPipelineVertexInputStateCreateInfo vertexInfo;
+
+	std::size_t descriptionHash;
+	
+	ShaderDescription(std::vector<VulkanShader> shaders) : shaders(shaders) {}
+	template<VertexDescription T>
+	void attachDescription() {
+		descriptionHash = typeid(T).hash_code();
 		vertexInfo = VkPipelineVertexInputStateCreateInfo{};
 		vertexInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 
@@ -118,18 +128,11 @@ struct ShaderDescription {
 		attributes = T::getAttributeDescriptions();	
 		vertexInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributes.size());
 		vertexInfo.pVertexAttributeDescriptions = attributes.data();
-	}
-	std::vector<VulkanShader<T>> shaders;
-
-	std::vector<VkPipelineShaderStageCreateInfo> getShaderStages() {
-		std::vector<VkPipelineShaderStageCreateInfo> out;
+		
 		for (auto shader : shaders) {
-			out.push_back(shader.info);
+			shaderStages.push_back(shader.info);
 		}
-		return out;
 	}
-
-	VkPipelineVertexInputStateCreateInfo vertexInfo;
 	void destroy() {
 		for (auto shader : shaders) {
 			shader.destroy();

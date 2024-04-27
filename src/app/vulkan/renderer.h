@@ -48,7 +48,7 @@ class VulkanRenderer {
 	const VkCommandPool getCommandPool() const { return commandPool; }
 	const VulkanRenderPass& getRenderPass() const { return renderPass; }
 	VulkanSurface* getSurface() const { return surface; } 
-	VulkanPipeline* getPipeline(size_t hash) { if (auto find = graphicsPipelines.find(hash); find != graphicsPipelines.end()) { return find->second; } else { return nullptr; } }
+	VulkanPipeline* getPipeline(std::size_t hash) { if (auto find = graphicsPipelines.find(hash); find != graphicsPipelines.end()) { return find->second; } else { return nullptr; } }
 
 	VulkanRenderer() {}
 	

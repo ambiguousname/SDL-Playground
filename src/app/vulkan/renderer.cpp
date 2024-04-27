@@ -48,11 +48,6 @@ void VulkanRenderPass::destroy(VkDevice device) {
 }
 
 void VulkanRenderer::destroy() {
-	for (auto i : creationInfo) {
-		i->destroy();
-		delete i;
-	}
-
 	for (auto p : graphicsPipelines) {
 		p.second->destroy();
 		delete p.second;
@@ -209,8 +204,8 @@ void VulkanRenderer::attachPendingGraphicsPipeline(VulkanPipelineInfo* info) {
 }
 
 void VulkanRenderer::intializePipelines() {
-	std::vector<VkGraphicsPipelineCreateInfo> creation(graphicsPipelines.size());
-	std::vector<VkPipeline> pipelinePtrs(graphicsPipelines.size());
+	std::vector<VkGraphicsPipelineCreateInfo> creation(creationInfo.size());
+	std::vector<VkPipeline> pipelinePtrs(creationInfo.size());
 
 	for (size_t i = 0; i < creationInfo.size(); i++) {
 		creation[i] = creationInfo[i]->pipelineInfo;
@@ -221,7 +216,11 @@ void VulkanRenderer::intializePipelines() {
 	}
 
 	for (size_t i = 0; i < pipelinePtrs.size(); i++) {
-		VulkanPipeline* pipeline = new VulkanPipeline(pipelinePtrs[i]);
+		VulkanPipeline* pipeline = new VulkanPipeline(pipelinePtrs[i], creationInfo[i]->pipelineLayout);
 		graphicsPipelines.insert(std::pair(creationInfo[i]->descriptionHash, pipeline));
+		
+		creationInfo[i]->destroy();
+		delete creationInfo[i];
 	}
+	creationInfo.clear();
 }

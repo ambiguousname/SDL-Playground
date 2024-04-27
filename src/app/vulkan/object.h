@@ -15,8 +15,4 @@ struct VulkanObject {
 	VulkanObject(const VulkanLogicDevice* device, const VulkanPhysicalDevice* physicalDevice, VkCommandPool commandPool);
 	void destroy();
 	void draw(VkCommandBuffer buffer);
-
-	bool operator==(VulkanObject const* rhs) {
-		return rhs->indexBuffer == indexBuffer && rhs->indexBufferMemory == indexBufferMemory && rhs->vertexBuffer == vertexBuffer && rhs->vertexBufferMemory == vertexBufferMemory;
-	}
 };

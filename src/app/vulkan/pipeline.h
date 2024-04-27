@@ -10,8 +10,6 @@ class VulkanRenderer;
 // TODO: Some guides online recommend caching pipelines between runs of the application.
 struct VulkanPipelineInfo {
 	protected:
-	void createPipelineInfo(VulkanRenderer* renderer, std::vector<VkPipelineShaderStageCreateInfo> shaderStages, VkPipelineVertexInputStateCreateInfo shaderVertexInfo);
-	
 	VkPipelineInputAssemblyStateCreateInfo inputAssembly;
 	VkViewport viewport;
 	VkRect2D scissor;
@@ -23,21 +21,17 @@ struct VulkanPipelineInfo {
 	VkPipelineColorBlendAttachmentState colorBlendAttachment;
 	VkPipelineColorBlendStateCreateInfo colorBlending;
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo;
+	ShaderDescription description;
+	
+	public:
+
+	VkGraphicsPipelineCreateInfo pipelineInfo;
+	const VulkanLogicDevice* device;
 	VkPipelineLayout pipelineLayout;
 
-	public:
-	const VulkanLogicDevice* device;
-	VkGraphicsPipelineCreateInfo pipelineInfo;
-	size_t descriptionHash;
-	template<typename T>
-	VulkanPipelineInfo(VulkanRenderer* renderer, ShaderDescription<T> description) {
-		descriptionHash = typeid(T).hash_code();
-
-		createPipelineInfo(renderer, description.getShaderStages(), description.vertexInfo);
-		
-		description.destroy();
-	}
-
+	std::size_t descriptionHash;
+	
+	VulkanPipelineInfo(VulkanRenderer* renderer, ShaderDescription description);
 	void destroy();
 };
 
@@ -45,13 +39,16 @@ struct VulkanPipelineInfo {
 struct VulkanPipeline {
 	public:
 	VkPipeline ptr = VK_NULL_HANDLE;
+	VkPipelineLayout pipelineLayout;
+	size_t description_hash;
 
 	VulkanSurface* surface;
 	const VulkanLogicDevice* device;
 
+	// FIXME: This would work better as a set, but hashing escapes me for right now.
 	std::unordered_set<VulkanObject*> objects;
 	
-	VulkanPipeline(VkPipeline ptr) : ptr(ptr) {}
+	VulkanPipeline(VkPipeline ptr, VkPipelineLayout layout) : ptr(ptr), pipelineLayout(layout), objects({}) {}
 
 	void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t image_index);
 	void destroy();

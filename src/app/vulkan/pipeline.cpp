@@ -1,7 +1,7 @@
 #include "pipeline.h"
 #include "../errors.h"
 
-void VulkanPipelineInfo::createPipelineInfo(VulkanRenderer* renderer, std::vector<VkPipelineShaderStageCreateInfo> shaderStages, VkPipelineVertexInputStateCreateInfo shaderVertexInfo) {
+VulkanPipelineInfo::VulkanPipelineInfo(VulkanRenderer* renderer, ShaderDescription description) : description(description) , descriptionHash(description.descriptionHash) {
 	inputAssembly = VkPipelineInputAssemblyStateCreateInfo{};
 	inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 	inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
@@ -96,9 +96,9 @@ void VulkanPipelineInfo::createPipelineInfo(VulkanRenderer* renderer, std::vecto
 
 	pipelineInfo = VkGraphicsPipelineCreateInfo{};
 	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-	pipelineInfo.stageCount = shaderStages.size();
-	pipelineInfo.pStages = shaderStages.data();
-	pipelineInfo.pVertexInputState = &shaderVertexInfo;
+	pipelineInfo.stageCount = this->description.shaderStages.size();
+	pipelineInfo.pStages = this->description.shaderStages.data();
+	pipelineInfo.pVertexInputState = &this->description.vertexInfo;
 	pipelineInfo.pInputAssemblyState = &inputAssembly;
 	pipelineInfo.pViewportState = &viewportState;
 	pipelineInfo.pRasterizationState = &rasterizer;
@@ -114,7 +114,7 @@ void VulkanPipelineInfo::createPipelineInfo(VulkanRenderer* renderer, std::vecto
 }
 
 void VulkanPipelineInfo::destroy() {
-	vkDestroyPipelineLayout(device->ptr, pipelineLayout, nullptr);
+	description.destroy();
 }
 
 void VulkanPipeline::destroy() {
@@ -123,6 +123,7 @@ void VulkanPipeline::destroy() {
 	}
 	objects.clear();
 
+	vkDestroyPipelineLayout(device->ptr, pipelineLayout, nullptr);
 	vkDestroyPipeline(device->ptr, ptr, nullptr);
 }
 
