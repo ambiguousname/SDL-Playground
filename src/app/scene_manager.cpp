@@ -19,14 +19,21 @@ void SceneManager::initializeScene() {
 			VulkanShader<VulkanVertex> vert(device->ptr, "shaders/vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
 			VulkanShader<VulkanVertex> frag(device->ptr, "shaders/frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
 			ShaderDescription<VulkanVertex> description({vert, frag});
-			renderer->attachGraphicsPipelineInfo(VulkanPipeline::getPipelineInfo(renderer, description.getShaderStages(), description.vertexInfo));
-			description.destroy();
+			renderer->attachPendingGraphicsPipeline(VulkanPipeline(renderer, description));
+
+			renderer->intializePipelines();
 			break;
 	}
 	activeScene->create();
+	app->update();
 }
 
 void SceneManager::update() {
+	switch(app->getContext()) {
+		case VULKAN:
+			app->vulkanInstance->draw();
+		break;
+	}
 	if (activeScene != nullptr) {
 		activeScene->update();
 	}

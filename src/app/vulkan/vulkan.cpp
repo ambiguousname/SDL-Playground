@@ -80,10 +80,10 @@ void VulkanWrapper::createInstance() {
 
 	VkApplicationInfo appInfo = {};
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    appInfo.pApplicationName = app->name;
+    appInfo.pApplicationName = app->name.c_str();
     appInfo.applicationVersion = VK_MAKE_API_VERSION(0, 1, 0, 0);
-    appInfo.pEngineName = "AmbiguousEngine";
-    appInfo.engineVersion = VK_MAKE_API_VERSION(0, 1, 0, 0);
+    appInfo.pEngineName = "Mekleth";
+    appInfo.engineVersion = VK_MAKE_API_VERSION(0, 0, 1, 0);
     appInfo.apiVersion = VK_API_VERSION_1_3;
 
 	VkInstanceCreateInfo createInfo = {};

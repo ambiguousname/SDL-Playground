@@ -11,6 +11,8 @@ Object::Object(App& app) {
 		VulkanRenderer* r = ((VulkanRenderer*)renderer);
 		const VulkanLogicDevice* device = r->getDevice();
 		VkCommandPool commandPool = r->getCommandPool();
+		// FIXME: Should be able to select what pipeline you want during object creation.
+		VulkanPipeline* p = r->getPipeline(typeid(VulkanVertex).hash_code()); 
 		// Move ownership into Vulkan so it gets destroyed when Vulkan is done with it.
 		inner = (void*)new VulkanObject(p, device, ((VulkanRenderer*)renderer)->getPhysicalDevice(), ((VulkanRenderer*)renderer)->getCommandPool());
 	} else {

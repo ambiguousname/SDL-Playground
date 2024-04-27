@@ -58,11 +58,6 @@ void App::update() {
 		}
 		SDL_PumpEvents();
 		sceneManager.update();
-		switch(context) {
-			case VULKAN:
-				vulkanInstance->draw();
-			break;
-		}
 	}
 	// Destroy before destructors, since we want a certain order.
 	switch(context) {

@@ -1,6 +1,10 @@
 #pragma once
 #include "app.h"
 
+struct ObjectConfig {
+	
+};
+
 class Object {
 	void* inner;
 	void* renderer;
