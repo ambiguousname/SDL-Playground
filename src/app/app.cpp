@@ -9,12 +9,6 @@ App::App(AppConfig config) : sceneManager(*new SceneManager(this)) {
 		throw AppError("Could not init SDL.");
 	}
 
-	switch (context) {
-		case VULKAN:
-			vulkanInstance = new VulkanWrapper(this);
-			break;
-	}
-
 	window = SDL_CreateWindow(name.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, SDL_WINDOW_SHOWN | SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE );
 	if (window == nullptr) {
 		throw SDLError("Could not create window.");
@@ -22,6 +16,7 @@ App::App(AppConfig config) : sceneManager(*new SceneManager(this)) {
 
 	switch (context) {
 		case VULKAN:
+			vulkanInstance = new VulkanWrapper(this);
 			vulkanInstance->createRenderer();
 			break;
 		case HARDWARE_2D:
