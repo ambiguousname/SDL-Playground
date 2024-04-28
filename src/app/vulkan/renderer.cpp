@@ -163,7 +163,7 @@ void VulkanRenderer::draw() {
 		throw AppError("Vulkan failed to acquire swap chain");
 	}
 	
-	vkResetCommandBuffer(commandBuffer, image_index);
+	vkResetCommandBuffer(commandBuffer, 0);
 	recordCommandBuffers(image_index);
 
 	VkSubmitInfo submit_info{};
