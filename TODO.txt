@@ -1,0 +1,3 @@
+- Shared pointer instead of this horrible pointer management. Prioritize references over ptrs.
+- Get rid of "default" class constructors as much as possible.
+- Formatting

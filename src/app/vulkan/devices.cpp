@@ -28,7 +28,7 @@ VulkanPhysicalDevice::VulkanPhysicalDevice(VkPhysicalDevice device, VkSurfaceKHR
 		VkBool32 presentSupport = false;
 		vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport);
 		if (presentSupport) {
-			indices.presentFamily = true;
+			indices.presentFamily = i;
 		}
 
 		if (indices.isComplete()) {

@@ -141,7 +141,6 @@ void VulkanRenderer::recordCommandBuffers(uint32_t image_index) {
 	render_pass_info.pClearValues = &clearColor;
 
 	vkCmdBeginRenderPass(commandBuffer, &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
-	vkResetCommandBuffer(commandBuffer, image_index);
 	for (auto pipeline : graphicsPipelines) {
 		pipeline.second->recordCommandBuffer(commandBuffer, image_index);
 	}
@@ -164,6 +163,7 @@ void VulkanRenderer::draw() {
 		throw AppError("Vulkan failed to acquire swap chain");
 	}
 	
+	vkResetCommandBuffer(commandBuffer, image_index);
 	recordCommandBuffers(image_index);
 
 	VkSubmitInfo submit_info{};
@@ -196,7 +196,12 @@ void VulkanRenderer::draw() {
 	presentInfo.pSwapchains = swapChains;
 	presentInfo.pImageIndices = &image_index;
 
-	vkQueuePresentKHR(device->presentQueue, &presentInfo);
+	result = vkQueuePresentKHR(device->presentQueue, &presentInfo);
+	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
+		refreshSwapChain();
+	} else if (result != VK_SUCCESS) {
+		throw AppError("Vulkan failed to present Swapchian.");
+	}
 }
 
 void VulkanRenderer::attachPendingGraphicsPipeline(VulkanPipelineInfo* info) {
@@ -216,7 +221,7 @@ void VulkanRenderer::intializePipelines() {
 	}
 
 	for (size_t i = 0; i < pipelinePtrs.size(); i++) {
-		VulkanPipeline* pipeline = new VulkanPipeline(pipelinePtrs[i], creationInfo[i]->pipelineLayout);
+		VulkanPipeline* pipeline = new VulkanPipeline(pipelinePtrs[i], creationInfo[i]->pipelineLayout, surface);
 		graphicsPipelines.insert(std::pair(creationInfo[i]->descriptionHash, pipeline));
 		
 		creationInfo[i]->destroy();
