@@ -221,7 +221,7 @@ void VulkanRenderer::intializePipelines() {
 	}
 
 	for (size_t i = 0; i < pipelinePtrs.size(); i++) {
-		VulkanPipeline* pipeline = new VulkanPipeline(pipelinePtrs[i], creationInfo[i]->pipelineLayout, surface);
+		VulkanPipeline* pipeline = new VulkanPipeline(pipelinePtrs[i], creationInfo[i]->pipelineLayout, surface, device);
 		graphicsPipelines.insert(std::pair(creationInfo[i]->descriptionHash, pipeline));
 		
 		creationInfo[i]->destroy();

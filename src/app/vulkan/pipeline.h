@@ -48,7 +48,7 @@ struct VulkanPipeline {
 	// FIXME: This would work better as a set, but hashing escapes me for right now.
 	std::unordered_set<VulkanObject*> objects;
 	
-	VulkanPipeline(VkPipeline ptr, VkPipelineLayout layout, VulkanSurface* surface) : ptr(ptr), pipelineLayout(layout), surface(surface) {}
+	VulkanPipeline(VkPipeline ptr, VkPipelineLayout layout, VulkanSurface* surface, const VulkanLogicDevice* device) : ptr(ptr), pipelineLayout(layout), surface(surface), device(device) {}
 
 	void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t image_index);
 	void destroy();
