@@ -5,7 +5,10 @@
 			"label": "Run project",
 			"type": "shell",
 			"command": "./build.cmd",
-			"group":"build"
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
 		}
 	]
 }

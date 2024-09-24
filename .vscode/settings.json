@@ -100,5 +100,11 @@
 		"variant": "cpp",
 		"*.ipp": "cpp",
 		"xstddef": "cpp"
+	},
+	"files.exclude": {
+		"**/*.rpyc": true,
+		"**/*.rpa": true,
+		"**/*.rpymc": true,
+		"**/cache/": true
 	}
 }
