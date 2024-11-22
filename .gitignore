@@ -19,5 +19,5 @@ build/
 bin/
 lib/
 
-# vcpkg:
-vcpkg_installed
+# VSCode:
+.vscode

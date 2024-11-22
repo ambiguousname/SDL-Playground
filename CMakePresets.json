@@ -3,17 +3,15 @@
 	"configurePresets": [
 		{
 			"name": "default",
-			"displayName": "Visual Studio Community 2022 Release - amd64",
-			"description": "Using compilers for Visual Studio 17 2022 (x64 architecture)",
-			"generator": "Visual Studio 17 2022",
-			"toolset": "host=x64",
-			"architecture": "x64",
-			"binaryDir": "${sourceDir}/out/build/${presetName}",
+			"displayName": "Msys UCRT compiler",
+			"generator": "Ninja",
+			"binaryDir": "${sourceDir}/build/${presetName}",
 			"cacheVariables": {
-				"CMAKE_INSTALL_PREFIX": "${sourceDir}/out/build/${presetName}",
+				"CMAKE_INSTALL_PREFIX": "${sourceDir}/bin/${presetName}",
 				"CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-				"CMAKE_C_COMPILER": "cl.exe",
-				"CMAKE_CXX_COMPILER": "cl.exe"
+				"CMAKE_C_COMPILER": "C:/msys64/ucrt64/bin/gcc.exe",
+				"CMAKE_CXX_COMPILER": "C:/msys64/ucrt64/bin/g++.exe",
+				"CMAKE_BUILD_TYPE": "Debug"
 			}
 		}
 	],
