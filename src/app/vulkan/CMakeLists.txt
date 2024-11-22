@@ -1,1 +1,1 @@
-target_sources(SDLPlayground PRIVATE vulkan.cpp pipeline.cpp renderer.cpp devices.cpp surface.cpp object.cpp helper.cpp PUBLIC vulkan.h pipeline.h renderer.h shader.h devices.h surface.h object.h helper.h)
+target_sources(SDLPlayground PRIVATE vulkan.cpp pipeline.cpp renderer.cpp devices.cpp surface.cpp object.cpp helper.cpp PUBLIC vulkan.hpp pipeline.hpp renderer.hpp shader.hpp devices.hpp surface.hpp object.hpp helper.hpp)
