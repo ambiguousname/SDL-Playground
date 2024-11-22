@@ -1,5 +1,5 @@
-#include "devices.h"
-#include "../errors.h"
+#include "devices.hpp"
+#include "../errors.hpp"
 #include <iostream>
 #include <set>
 

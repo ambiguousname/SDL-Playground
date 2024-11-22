@@ -1,9 +1,9 @@
 #pragma once
 #include <vulkan/vulkan.hpp>
 #include <unordered_map>
-#include "surface.h"
-#include "object.h"
-#include "renderer.h"
+#include "surface.hpp"
+#include "object.hpp"
+#include "renderer.hpp"
 
 class VulkanRenderer;
 

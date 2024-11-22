@@ -1,8 +1,8 @@
 #pragma once
 #include <vulkan/vulkan.hpp>
 #include <unordered_set>
-#include "shader.h"
-#include "devices.h"
+#include "shader.hpp"
+#include "devices.hpp"
 
 struct VulkanObject {
 	VkBuffer vertexBuffer;

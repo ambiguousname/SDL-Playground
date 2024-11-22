@@ -1,5 +1,5 @@
 #pragma once
-#include "macros.h"
+#include "macros.hpp"
 #include <vector>
 
 #define _TEMPLATE_EXPAND(arg) typename arg,

@@ -1,5 +1,5 @@
-#include "pipeline.h"
-#include "../errors.h"
+#include "pipeline.hpp"
+#include "../errors.hpp"
 
 VulkanPipelineInfo::VulkanPipelineInfo(VulkanRenderer* renderer, ShaderDescription description) : description(description) , descriptionHash(description.descriptionHash) {
 	inputAssembly = VkPipelineInputAssemblyStateCreateInfo{};

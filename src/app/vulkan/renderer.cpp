@@ -1,6 +1,6 @@
-#include "renderer.h"
+#include "renderer.hpp"
 #include <algorithm>
-#include "../errors.h"
+#include "../errors.hpp"
 
 VulkanRenderPass::VulkanRenderPass(VkDevice device, const VulkanSwapChain& swapChain) {
 	VkAttachmentDescription colorAttachment{};

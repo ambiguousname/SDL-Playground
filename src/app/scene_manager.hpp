@@ -1,6 +1,6 @@
 #pragma once
-#include "scene.h"
-#include "app.h"
+#include "scene.hpp"
+#include "app.hpp"
 
 class App;
 

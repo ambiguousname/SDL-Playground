@@ -1,5 +1,5 @@
 #pragma once
-#include "controller.h"
+#include "controller.hpp"
 
 /// @brief Source for only one key. `pullData` only returns a value when the key has just been pressed or released.
 class KeySource : public ControlSource {

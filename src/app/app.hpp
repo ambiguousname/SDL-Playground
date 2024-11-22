@@ -1,8 +1,8 @@
 #pragma once
 #include <SDL.h>
-#include "../util/controls/controller.h"
-#include "vulkan/vulkan.h"
-#include "scene_manager.h"
+#include "../util/controls/controller.hpp"
+#include "vulkan/vulkan.hpp"
+#include "scene_manager.hpp"
 
 enum Context {
 	VULKAN,

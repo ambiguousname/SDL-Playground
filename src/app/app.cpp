@@ -1,5 +1,5 @@
-#include "app.h"
-#include "errors.h"
+#include "app.hpp"
+#include "errors.hpp"
 
 App::App(AppConfig config) : sceneManager(*new SceneManager(this)) {
 	this->name = config.name;

@@ -4,11 +4,11 @@
 #include <unordered_set>
 #include <unordered_map>
 #include <SDL_video.h>
-#include "devices.h"
-#include "surface.h"
-#include "shader.h"
-#include "helper.h"
-#include "pipeline.h"
+#include "devices.hpp"
+#include "surface.hpp"
+#include "shader.hpp"
+#include "helper.hpp"
+#include "pipeline.hpp"
 
 struct VulkanRenderPass {
 	VkRenderPass ptr;

@@ -1,7 +1,7 @@
 #pragma once
-#include "app/app.h"
-#include "app/object.h"
-#include "util/controls/controller.h"
+#include "app/app.hpp"
+#include "app/object.hpp"
+#include "util/controls/controller.hpp"
 #include <glm/glm.hpp>
 #include <memory>
 

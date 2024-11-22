@@ -1,5 +1,5 @@
 #pragma once
-#include "devices.h"
+#include "devices.hpp"
 #include <vector>
 #include <SDL_video.h>
 #include <vulkan/vulkan.hpp>

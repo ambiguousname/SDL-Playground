@@ -1,6 +1,6 @@
-#include "game.h"
-#include "util/controls/keyboard.h"
-#include "app/object.h"
+#include "game.hpp"
+#include "util/controls/keyboard.hpp"
+#include "app/object.hpp"
 
 using namespace std;
 using namespace glm;

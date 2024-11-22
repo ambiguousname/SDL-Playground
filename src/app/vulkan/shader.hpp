@@ -3,7 +3,7 @@
 #include <vulkan/vulkan.hpp>
 #include <fstream>
 #include <glm/glm.hpp>
-#include "../errors.h"
+#include "../errors.hpp"
 
 // TODO: Shaders need to be loaded by user definition.
 

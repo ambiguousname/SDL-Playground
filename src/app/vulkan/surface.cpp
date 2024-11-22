@@ -1,5 +1,5 @@
-#include "surface.h"
-#include "../errors.h"
+#include "surface.hpp"
+#include "../errors.hpp"
 #include <SDL_vulkan.h>
 
 

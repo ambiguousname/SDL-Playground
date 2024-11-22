@@ -1,7 +1,7 @@
-#include "object.h"
-#include "errors.h"
-#include "vulkan/object.h"
-#include "vulkan/renderer.h"
+#include "object.hpp"
+#include "errors.hpp"
+#include "vulkan/object.hpp"
+#include "vulkan/renderer.hpp"
 
 Object::Object(App& app) {
 	context = app.getContext();

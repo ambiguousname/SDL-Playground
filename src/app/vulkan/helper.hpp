@@ -1,5 +1,5 @@
 #pragma once
-#include "devices.h"
+#include "devices.hpp"
 
 namespace VulkanHelper {
 	void createBuffer(VkDevice device, const VulkanPhysicalDevice* physicalDevice, VkDeviceSize bufferSize, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);

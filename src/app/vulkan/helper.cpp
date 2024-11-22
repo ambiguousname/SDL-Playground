@@ -1,5 +1,5 @@
-#include "helper.h"
-#include "../errors.h"
+#include "helper.hpp"
+#include "../errors.hpp"
 
 void VulkanHelper::createBuffer(VkDevice device, const VulkanPhysicalDevice* physicalDevice, VkDeviceSize bufferSize, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory) {
 	VkBufferCreateInfo bufferInfo{};
