@@ -2,7 +2,6 @@
   "dependencies": [
     "glm",
     "sdl2",
-    "vulkan-loader",
     "vulkan-headers"
   ]
 }

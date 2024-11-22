@@ -2,7 +2,7 @@
 	"version": 8,
 	"configurePresets": [
 		{
-			"name": "vcpkg",
+			"name": "default",
 			"displayName": "Visual Studio Community 2022 Release - amd64",
 			"description": "Using compilers for Visual Studio 17 2022 (x64 architecture)",
 			"generator": "Visual Studio 17 2022",
@@ -19,9 +19,9 @@
 	],
 	"buildPresets": [
 		{
-			"name": "vcpkg-debug",
+			"name": "default-debug",
 			"displayName": "Visual Studio Community 2022 Release - amd64 - Debug",
-			"configurePreset": "vcpkg",
+			"configurePreset": "default",
 			"configuration": "Debug"
 		}
 	]
