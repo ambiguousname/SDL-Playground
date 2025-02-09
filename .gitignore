@@ -21,3 +21,10 @@ lib/
 
 # VSCode:
 .vscode
+
+# MSVC:
+vcpkg_installed
+*.vcxproj*
+*.sln
+*.log
+x64

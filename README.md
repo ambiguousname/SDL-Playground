@@ -5,6 +5,7 @@ Install `cmake`
 Run `cmake . --preset default`
 
 TODO:
-- MSVC is out because of macro issues
-- Ninja COULD work, but it interfacing with CMake rn is an issue.
-- Thinking we just move to Meson and put this all behind us
+Either:
+- Make macros compatible with MSVC
+- Get Ninja working with CMake and a C compiler (maybe install it for Windows, use that first?)
+- Transfer over to Meson to put this all behind us
