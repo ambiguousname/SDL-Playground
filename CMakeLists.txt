@@ -8,6 +8,9 @@ find_package(glm CONFIG REQUIRED)
 add_executable(SDLPlayground WIN32 ${SOURCE})
 add_subdirectory(src)
 
+add_subdirectory(shaders)
+add_dependencies(SDLPlayground shaders)
+
 set_property(TARGET SDLPlayground PROPERTY CXX_STANDARD 20)
 
 if(TARGET SDL2::SDL2main)
