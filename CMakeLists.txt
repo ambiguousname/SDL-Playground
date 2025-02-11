@@ -15,5 +15,4 @@ if(TARGET SDL2::SDL2main)
     target_link_libraries(SDLPlayground PRIVATE SDL2::SDL2main)
 endif()
 
-target_link_libraries(SDLPlayground PRIVATE
- SDL2::SDL2 Vulkan::Vulkan glm::glm)
+target_link_libraries(SDLPlayground PRIVATE Vulkan::Vulkan SDL2::SDL2 glm::glm)
