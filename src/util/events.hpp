@@ -14,7 +14,7 @@ class EventListener {
 	public:
 	void invoke(T data) {
 		for (auto l: listeners) {
-			l.invoke(data);
+			(*l.callback)(data);
 		}
 	}
 
