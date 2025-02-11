@@ -1,3 +1,6 @@
+- CMake compile shaders
+- Re-figure out what's going wrong with vulkan
+
 - Shared pointer instead of this horrible pointer management. Prioritize references over ptrs.
 - Get rid of "default" class constructors as much as possible.
 - Formatting
