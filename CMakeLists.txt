@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.30.4)
 project(SDLPlayground)
 
+set(APP_DIR ${CMAKE_BINARY_DIR}/Debug)
+
 find_package(SDL2 CONFIG REQUIRED)
 find_package(Vulkan REQUIRED)
 find_package(glm CONFIG REQUIRED)

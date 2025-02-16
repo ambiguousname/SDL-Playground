@@ -16,8 +16,8 @@ void SceneManager::initializeScene() {
 			const VulkanLogicDevice* device = renderer->getDevice();
 
 			// Default pipeline:
-			VulkanShader vert(device->ptr, "shaders/vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
-			VulkanShader frag(device->ptr, "shaders/frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
+			VulkanShader vert(device->ptr, "shaders/main.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
+			VulkanShader frag(device->ptr, "shaders/main.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
 			ShaderDescription description = ShaderDescription(std::vector<VulkanShader>({vert, frag}));
 			description.attachDescription<VulkanVertex>();
 			renderer->attachPendingGraphicsPipeline(new VulkanPipelineInfo(renderer, description));
