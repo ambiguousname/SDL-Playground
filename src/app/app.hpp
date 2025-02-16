@@ -1,5 +1,5 @@
 #pragma once
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #include "../util/controls/controller.hpp"
 #include "vulkan/vulkan.hpp"
 #include "scene_manager.hpp"

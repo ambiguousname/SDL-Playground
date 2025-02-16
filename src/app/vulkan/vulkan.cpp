@@ -1,5 +1,5 @@
 #include "vulkan.hpp"
-#include <SDL_vulkan.h>
+#include <SDL3/SDL_vulkan.h>
 #include <iostream>
 #include <set>
 
@@ -91,15 +91,14 @@ void VulkanWrapper::createInstance() {
 	createInfo.pApplicationInfo = &appInfo;
 
 	uint32_t extensionCount = 0;
-	bool success = SDL_Vulkan_GetInstanceExtensions(app->window, &extensionCount, nullptr);
-	if (!success) {
+	char const* const* extensionsDat = SDL_Vulkan_GetInstanceExtensions(&extensionCount);
+	if (extensionsDat == nullptr) {
 		throw SDLError("Could not get Vulkan Instance extensions.");
 	}
 	
 	std::vector<const char*> extensionNames(extensionCount);
-	bool getNames = SDL_Vulkan_GetInstanceExtensions(app->window, &extensionCount, extensionNames.data());
-	if (!getNames) {
-		throw SDLError("Could not get Vulkan Instance extensions.");
+	for (int i = 0; i < extensionCount; i++) {
+		extensionNames[i] = extensionsDat[i];
 	}
 
 	if (enableValidationLayers) {

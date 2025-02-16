@@ -6,7 +6,7 @@ bool KeySource::pullData(ControlData& out) {
 		return false;
 	}
 
-	bool pressed = SDL_GetKeyboardState(NULL)[SDL_GetScancodeFromName(keyName)] > 0;
+	bool pressed = SDL_GetKeyboardState(NULL)[SDL_GetScancodeFromName(keyName)];
 	if (pressedDown && !pressed) {
 		pressedDown = false;
 		out = ControlData{BOOL, pressed};
@@ -24,13 +24,13 @@ bool KeyVector::pullData(ControlData& out) {
 		return false;
 	}
 
-	const Uint8* keyboard = SDL_GetKeyboardState(NULL);
+	const bool* keyboard = SDL_GetKeyboardState(NULL);
 	out.vec = glm::vec2{0.f, 0.f};
 
 	// TODO: Allow for multiple inputs from different sources.
 	// Maybe prioritize axes with a greater value than those closer to zero?
 	for (int i = 0; i < 4; i++) {
-		bool pressed = keyboard[SDL_GetScancodeFromName(keys[i])] > 0;
+		bool pressed = keyboard[SDL_GetScancodeFromName(keys[i])];
 		int neg = (i % 2 == 0) ? -1 : 1;
 		if (i <= 1) {
 			out.vec.y += neg * (pressed ? 1 : 0);

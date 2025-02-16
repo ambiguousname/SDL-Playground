@@ -4,8 +4,8 @@
 #include <map>
 #include <glm/glm.hpp>
 #include <string>
-#include <SDL_gamecontroller.h>
-#include <SDL_events.h>
+#include <SDL3/SDL_gamepad.h>
+#include <SDL3/SDL_events.h>
 #include <memory>
 
 /// @brief The type of data we've just returned.

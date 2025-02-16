@@ -1,7 +1,7 @@
 #pragma once
 #include "devices.hpp"
 #include <vector>
-#include <SDL_video.h>
+#include <SDL3/SDL_video.h>
 #include <vulkan/vulkan.hpp>
 
 struct VulkanSwapChain {

@@ -3,7 +3,7 @@ project(SDLPlayground)
 
 set(APP_DIR ${CMAKE_BINARY_DIR}/Debug)
 
-find_package(SDL2 CONFIG REQUIRED)
+find_package(SDL3 REQUIRED CONFIG REQUIRED COMPONENTS SDL3)
 find_package(Vulkan REQUIRED)
 find_package(glm CONFIG REQUIRED)
 
@@ -15,9 +15,4 @@ add_dependencies(SDLPlayground shaders)
 
 set_property(TARGET SDLPlayground PROPERTY CXX_STANDARD 20)
 
-if(TARGET SDL2::SDL2main)
-    # It has an implicit dependency on SDL2 functions, so it MUST be added before SDL2::SDL2 (or SDL2::SDL2-static)
-    target_link_libraries(SDLPlayground PRIVATE SDL2::SDL2main)
-endif()
-
-target_link_libraries(SDLPlayground PRIVATE Vulkan::Vulkan SDL2::SDL2 glm::glm)
+target_link_libraries(SDLPlayground PRIVATE Vulkan::Vulkan SDL3::SDL3 glm::glm)

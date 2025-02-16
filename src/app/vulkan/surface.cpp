@@ -1,6 +1,6 @@
 #include "surface.hpp"
 #include "../errors.hpp"
-#include <SDL_vulkan.h>
+#include <SDL3/SDL_vulkan.h>
 
 
 void VulkanSwapChain::destroy() {
@@ -141,7 +141,7 @@ VulkanSurface::VulkanSurface(SDL_Window* window, VkInstance instance) {
 	targetWindow = window;
 	this->instance = instance;
 
-	bool success = SDL_Vulkan_CreateSurface(window, instance, &ptr);
+	bool success = SDL_Vulkan_CreateSurface(window, instance, nullptr, &ptr);
 	if (!success) {
 		throw SDLError("SDL could not create a Vulkan Surface.");
 	}

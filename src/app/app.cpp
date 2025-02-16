@@ -5,11 +5,11 @@ App::App(AppConfig config) : sceneManager(*new SceneManager(this)) {
 	this->name = config.name;
 	this->context = config.context;
 
-	if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
+	if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMEPAD )) {
 		throw AppError("Could not init SDL.");
 	}
 
-	window = SDL_CreateWindow(name.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, SDL_WINDOW_SHOWN | SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE );
+	window = SDL_CreateWindow(name.c_str(), 640, 480, SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE );
 	if (window == nullptr) {
 		throw SDLError("Could not create window.");
 	}
@@ -20,7 +20,7 @@ App::App(AppConfig config) : sceneManager(*new SceneManager(this)) {
 			vulkanInstance->createRenderer();
 			break;
 		case HARDWARE_2D:
-			sdlRenderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+			sdlRenderer = SDL_CreateRenderer(window, nullptr);
 			if (sdlRenderer == nullptr) {
 				throw SDLError("Could not create renderer.");
 			}
@@ -47,7 +47,7 @@ void App::update() {
 	while(!quit) {
 		SDL_Event e;
 		while (SDL_PollEvent(&e)){
-			if (e.type == SDL_QUIT) {
+			if (e.type == SDL_EVENT_QUIT) {
 				quit = true;
 				break;
 			}

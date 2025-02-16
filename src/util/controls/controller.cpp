@@ -77,7 +77,7 @@ Control::Control(ControlDataType expected_out) : value{expected_out} {
 Controller::Controller() {
 	static bool initialized = false;
 	if (!initialized) {
-		SDL_GameControllerAddMappingsFromFile("gamecontrollerdb.txt");
+		SDL_AddGamepadMappingsFromFile("gamecontrollerdb.txt");
 		initialized = true;
 	}
 }
