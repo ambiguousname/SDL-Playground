@@ -28,11 +28,19 @@ struct VulkanPipelineInfo {
 	VkGraphicsPipelineCreateInfo pipelineInfo;
 	const VulkanLogicDevice* device;
 	VkPipelineLayout pipelineLayout;
+	VkDescriptorSetLayout descriptorSetLayout;
 
 	std::size_t descriptionHash;
 	
 	VulkanPipelineInfo(VulkanRenderer* renderer, ShaderDescription description);
 	void destroy();
+};
+
+// TODO: Need to make this more flexible
+struct DisplayMatrices {
+	glm::mat4 model;
+	glm::mat4 view;
+	glm::mat4 proj;
 };
 
 // FIXME: This is way too specific to graphics pipelines.
@@ -47,8 +55,19 @@ struct VulkanPipeline {
 
 	// FIXME: This would work better as a set, but hashing escapes me for right now.
 	std::unordered_set<VulkanObject*> objects;
+
+	VkDescriptorPool descriptorPool;
+	std::vector<VkDescriptorSet> descriptorSets;
+
+	VkDescriptorSetLayout descriptorSetLayout;
+
+	std::vector<VkBuffer> uniformBuffers;
+	std::vector<VkDeviceMemory> uniformBuffersMemory;
+	std::vector<void*> uniformBuffersMapped;
+
+	glm::mat4 modelMatrix;
 	
-	VulkanPipeline(VkPipeline ptr, VkPipelineLayout layout, VulkanSurface* surface, const VulkanLogicDevice* device) : ptr(ptr), pipelineLayout(layout), surface(surface), device(device) {}
+	VulkanPipeline(VkPipeline ptr, VulkanPipelineInfo* creationInfo, VulkanSurface* surface, const VulkanLogicDevice* device, const VulkanPhysicalDevice* physicalDevice);
 
 	void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t image_index);
 	void destroy();

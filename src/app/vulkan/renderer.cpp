@@ -82,6 +82,7 @@ void VulkanRenderer::createCommandPool() {
 	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 	allocInfo.commandBufferCount = 1;
 
+	// TODO: https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight
 	// Does not need to be freed, is freed when commandPool is freed.
 	if (vkAllocateCommandBuffers(device->ptr, &allocInfo, &commandBuffer) != VK_SUCCESS) {
 		throw AppError("Vulkan could not allocate command buffers.");
@@ -221,7 +222,7 @@ void VulkanRenderer::intializePipelines() {
 	}
 
 	for (size_t i = 0; i < pipelinePtrs.size(); i++) {
-		VulkanPipeline* pipeline = new VulkanPipeline(pipelinePtrs[i], creationInfo[i]->pipelineLayout, surface, device);
+		VulkanPipeline* pipeline = new VulkanPipeline(pipelinePtrs[i], creationInfo[i], surface, device, physicalDevice);
 		graphicsPipelines.insert(std::pair(creationInfo[i]->descriptionHash, pipeline));
 		
 		creationInfo[i]->destroy();

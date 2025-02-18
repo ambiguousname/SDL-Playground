@@ -67,14 +67,6 @@ struct VulkanShader {
 			throw AppError(error);
 		}
 
-		// VkDescriptorSetLayoutBinding uboLayoutBinding{};
-		// uboLayoutBinding.binding = 0;
-		// uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		// uboLayoutBinding.descriptorCount = 1;
-		// uboLayoutBinding.stageFlags = stage;
-		// uboLayoutBinding.pImmutableSamplers = nullptr; // Optional
-		// if (vkCreateDescriptorSetLayout(device, &))
-
 		size_t fileSize = (size_t) file.tellg();
 		bytes.resize(fileSize);
 		file.seekg(0);
