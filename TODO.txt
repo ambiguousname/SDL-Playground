@@ -2,7 +2,6 @@
 
 
 - Make binding set system more generic
-- Revise pipeline system (I think it should be more shader/object -centric??)
 - Frames in flight
 
 - Shared pointer instead of this horrible pointer management. Prioritize references over ptrs.
