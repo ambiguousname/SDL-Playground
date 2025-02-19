@@ -96,7 +96,7 @@ VulkanObject::VulkanObject(const VulkanLogicDevice* device, const VulkanPhysical
 	
 	// TODO: https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight
 	// Uniform buffers:
-	VkDeviceSize bufferSize = sizeof(DisplayMatrices);
+	VkDeviceSize bufferSize = sizeof(DisplayMatrices) + sizeof(ModelMatrix);
 	uniformBuffers.resize(1);
 	uniformBuffersMemory.resize(1);
 	uniformBuffersMapped.resize(1);
@@ -110,7 +110,7 @@ VulkanObject::VulkanObject(const VulkanLogicDevice* device, const VulkanPhysical
 		// TODO: https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight
 		bufferInfo.buffer = uniformBuffers[0];
 		bufferInfo.offset = 0;
-		bufferInfo.range = sizeof(DisplayMatrices);
+		bufferInfo.range = sizeof(DisplayMatrices) + sizeof(ModelMatrix);
 
 		VkWriteDescriptorSet descriptorWrite{};
 		descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -159,13 +159,15 @@ void VulkanObject::draw(VkCommandBuffer buffer, uint32_t image_index) {
 	
 	// TODO: Make this flexible.
 	DisplayMatrices test{};
-	test.model = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 	test.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 	test.proj = glm::perspective(glm::radians(45.0f), 0.5f, 0.1f, 10.0f);
 	// test.proj[1][1] *= -1;
 	
 	// TODO: https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight
 	memcpy(uniformBuffersMapped[0], &test, sizeof(test));
+
+	glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(0.1f, 0.0f, 0.0f));
+	memcpy((void*)((intptr_t)uniformBuffersMapped[0] + sizeof(DisplayMatrices)), &model, sizeof(glm::mat4));
 
 	// TODO: https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight
 	vkCmdBindDescriptorSets(buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->pipelineLayout, 0, 1, &descriptorSets[0], 0, nullptr);

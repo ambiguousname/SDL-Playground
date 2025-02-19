@@ -14,6 +14,13 @@ struct VulkanVertex {
 	glm::vec3 color;
 };
 
+struct DisplayMatrices {
+	glm::mat4 view;
+	glm::mat4 proj;
+};
+
+typedef glm::mat4 ModelMatrix;
+
 class VulkanObject {
 	protected:
 	// TODO: Allow multiple pipelines per object.

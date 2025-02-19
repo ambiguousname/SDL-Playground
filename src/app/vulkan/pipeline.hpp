@@ -34,13 +34,6 @@ struct VulkanPipelineInfo {
 	void destroy();
 };
 
-// TODO: Need to make this more flexible
-struct DisplayMatrices {
-	glm::mat4 model;
-	glm::mat4 view;
-	glm::mat4 proj;
-};
-
 class VulkanPipeline {
 	protected:
 	// Information for constructing the pipeline:
