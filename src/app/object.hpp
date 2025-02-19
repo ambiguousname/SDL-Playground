@@ -1,10 +1,6 @@
 #pragma once
 #include "app.hpp"
 
-struct ObjectConfig {
-	
-};
-
 class Object {
 	void* inner;
 	void* renderer;

@@ -48,9 +48,8 @@ void VulkanRenderPass::destroy(VkDevice device) {
 }
 
 void VulkanRenderer::destroy() {
-	for (auto p : graphicsPipelines) {
-		p.second->destroy();
-		delete p.second;
+	for (auto o : vulkanObjects) {
+		o->destroy();
 	}
 	renderPass.destroy(device->ptr);
 	vkDestroySemaphore(device->ptr, imageAvailable, nullptr);
@@ -142,9 +141,11 @@ void VulkanRenderer::recordCommandBuffers(uint32_t image_index) {
 	render_pass_info.pClearValues = &clearColor;
 
 	vkCmdBeginRenderPass(commandBuffer, &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
-	for (auto pipeline : graphicsPipelines) {
-		pipeline.second->recordCommandBuffer(commandBuffer, image_index);
+	for (auto o : vulkanObjects) {
+		o->draw(commandBuffer, image_index);
 	}
+	vkCmdEndRenderPass(commandBuffer);
+
 	if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
 		throw AppError("Vulkan could not record command buffer.");
 	}
@@ -205,28 +206,10 @@ void VulkanRenderer::draw() {
 	}
 }
 
-void VulkanRenderer::attachPendingGraphicsPipeline(VulkanPipelineInfo* info) {
-	creationInfo.push_back(info);
+void VulkanRenderer::attachObject(VulkanObject* o) {
+	vulkanObjects.insert(o);
 }
 
-void VulkanRenderer::intializePipelines() {
-	std::vector<VkGraphicsPipelineCreateInfo> creation(creationInfo.size());
-	std::vector<VkPipeline> pipelinePtrs(creationInfo.size());
-
-	for (size_t i = 0; i < creationInfo.size(); i++) {
-		creation[i] = creationInfo[i]->pipelineInfo;
-	}
-
-	if (vkCreateGraphicsPipelines(device->ptr, VK_NULL_HANDLE, creation.size(), creation.data(), nullptr, pipelinePtrs.data()) != VK_SUCCESS) {
-		throw AppError("Vulkan could not create graphics pipeline.");
-	}
-
-	for (size_t i = 0; i < pipelinePtrs.size(); i++) {
-		VulkanPipeline* pipeline = new VulkanPipeline(pipelinePtrs[i], creationInfo[i], surface, device, physicalDevice);
-		graphicsPipelines.insert(std::pair(creationInfo[i]->descriptionHash, pipeline));
-		
-		creationInfo[i]->destroy();
-		delete creationInfo[i];
-	}
-	creationInfo.clear();
+void VulkanRenderer::removeObject(VulkanObject* o) {
+	vulkanObjects.erase(o);
 }

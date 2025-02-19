@@ -1,7 +1,7 @@
 #include "pipeline.hpp"
 #include "../errors.hpp"
 
-VulkanPipelineInfo::VulkanPipelineInfo(VulkanRenderer* renderer, ShaderDescription description) : description(description) , descriptionHash(description.descriptionHash) {
+VulkanPipelineInfo::VulkanPipelineInfo(VulkanRenderer* renderer, ShaderDescription description) : description(description) {
 	inputAssembly = VkPipelineInputAssemblyStateCreateInfo{};
 	inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 	inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
@@ -135,99 +135,15 @@ void VulkanPipelineInfo::destroy() {
 	description.destroy();
 }
 
-VulkanPipeline::VulkanPipeline(VkPipeline ptr, VulkanPipelineInfo* creationInfo, VulkanSurface* surface, const VulkanLogicDevice* device, const VulkanPhysicalDevice* physicalDevice) : ptr(ptr), pipelineLayout(creationInfo->pipelineLayout), descriptorSetLayout(creationInfo->descriptorSetLayout), surface(surface), device(device) {
-	VkDescriptorPoolSize poolSize{};
-	poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	// TODO: https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight
-	poolSize.descriptorCount = 1;
-
-	VkDescriptorPoolCreateInfo poolInfo{};
-	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-	poolInfo.poolSizeCount = 1;
-	poolInfo.pPoolSizes = &poolSize;
-	// TODO: https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight
-	poolInfo.maxSets = 1;
-
-	if (vkCreateDescriptorPool(device->ptr, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create descriptor pool!");
-	}
-
-	// TODO: https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight
-	std::vector<VkDescriptorSetLayout> layouts(1, descriptorSetLayout);
-	VkDescriptorSetAllocateInfo allocInfo{};
-	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-	allocInfo.descriptorPool = descriptorPool;
-	// TODO: https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight
-	allocInfo.descriptorSetCount = 1;
-	allocInfo.pSetLayouts = layouts.data();
-
-	// TODO: https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight
-	descriptorSets.resize(1);
-	if (vkAllocateDescriptorSets(device->ptr, &allocInfo, descriptorSets.data()) != VK_SUCCESS) {
-		throw std::runtime_error("failed to allocate descriptor sets!");
-	}
-
-	
-	// TODO: https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight
-	// FIXME: Does this belong in the object?
-	// Uniform buffers:
-	VkDeviceSize bufferSize = sizeof(DisplayMatrices);
-	uniformBuffers.resize(1);
-	uniformBuffersMemory.resize(1);
-	uniformBuffersMapped.resize(1);
-
-	for (size_t i = 0; i < 1; i++) {
-		VulkanHelper::createBuffer(device->ptr, physicalDevice, bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffers[i], uniformBuffersMemory[i]);
-
-		vkMapMemory(device->ptr, uniformBuffersMemory[i], 0, bufferSize, 0, &uniformBuffersMapped[i]);
-
-		VkDescriptorBufferInfo bufferInfo{};
-		// TODO: https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight
-		bufferInfo.buffer = uniformBuffers[0];
-		bufferInfo.offset = 0;
-		bufferInfo.range = sizeof(DisplayMatrices);
-
-		VkWriteDescriptorSet descriptorWrite{};
-		descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		// TODO: https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight
-		descriptorWrite.dstSet = descriptorSets[0];
-		descriptorWrite.dstBinding = 0;
-		descriptorWrite.dstArrayElement = 0;
-		descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		descriptorWrite.descriptorCount = 1;
-		descriptorWrite.pBufferInfo = &bufferInfo;
-		descriptorWrite.pImageInfo = nullptr; // Optional
-		descriptorWrite.pTexelBufferView = nullptr; // Optional
-		vkUpdateDescriptorSets(device->ptr, 1, &descriptorWrite, 0, nullptr);
-	}
+VulkanPipeline::VulkanPipeline(VkPipeline ptr, VulkanPipelineInfo creationInfo, VulkanSurface* surface, const VulkanLogicDevice* device, const VulkanPhysicalDevice* physicalDevice) : ptr(ptr), pipelineLayout(creationInfo.pipelineLayout), surface(surface), device(device) {
 }
 
 void VulkanPipeline::destroy() {
-	for (auto o : objects) {
-		o->destroy();
-	}
-	objects.clear();
-
 	vkDestroyPipelineLayout(device->ptr, pipelineLayout, nullptr);
 	vkDestroyPipeline(device->ptr, ptr, nullptr);
-
-	// TODO: https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight
-	for (size_t i = 0; i < 1; i++) {
-        vkDestroyBuffer(device->ptr, uniformBuffers[i], nullptr);
-        vkFreeMemory(device->ptr, uniformBuffersMemory[i], nullptr);
-    }
-
-	vkDestroyDescriptorPool(device->ptr, descriptorPool, nullptr);
-	vkDestroyDescriptorSetLayout(device->ptr, descriptorSetLayout, nullptr);
 }
 
-#include <glm/ext/matrix_transform.hpp>
-#include <glm/ext/matrix_clip_space.hpp>
 void VulkanPipeline::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t image_index) {
-	if (objects.size() < 0) {
-		return;
-	}
-
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, ptr);
 	VkViewport viewport{};
 	viewport.x = 0.0f;
@@ -242,33 +158,4 @@ void VulkanPipeline::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t
 	scissor.offset = {0, 0};
 	scissor.extent = surface->swapChain.extents;
 	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
-	
-	// TODO: Make this flexible.
-	DisplayMatrices test{};
-	test.model = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	test.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	test.proj = glm::perspective(glm::radians(45.0f), 0.5f, 0.1f, 10.0f);
-	// test.proj[1][1] *= -1;
-
-	// TODO: https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight
-	memcpy(uniformBuffersMapped[0], &test, sizeof(test));
-
-	// TODO: https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight
-	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[0], 0, nullptr);
-
-	for (auto o : objects) {
-		o->draw(commandBuffer);
-	}
-
-	vkCmdEndRenderPass(commandBuffer);
-}
-
-
-
-void VulkanPipeline::attachObject(VulkanObject* o) {
-	objects.insert(o);
-}
-
-void VulkanPipeline::removeObject(VulkanObject* o) { 
-	objects.erase(o);
 }

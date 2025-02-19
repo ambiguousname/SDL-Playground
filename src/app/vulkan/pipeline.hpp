@@ -2,8 +2,8 @@
 #include <vulkan/vulkan.hpp>
 #include <unordered_map>
 #include "surface.hpp"
-#include "object.hpp"
 #include "renderer.hpp"
+#include "shader.hpp"
 
 class VulkanRenderer;
 
@@ -29,8 +29,6 @@ struct VulkanPipelineInfo {
 	const VulkanLogicDevice* device;
 	VkPipelineLayout pipelineLayout;
 	VkDescriptorSetLayout descriptorSetLayout;
-
-	std::size_t descriptionHash;
 	
 	VulkanPipelineInfo(VulkanRenderer* renderer, ShaderDescription description);
 	void destroy();
@@ -43,35 +41,19 @@ struct DisplayMatrices {
 	glm::mat4 proj;
 };
 
-// FIXME: This is way too specific to graphics pipelines.
-struct VulkanPipeline {
-	public:
+class VulkanPipeline {
+	protected:
+	// Information for constructing the pipeline:
 	VkPipeline ptr = VK_NULL_HANDLE;
-	VkPipelineLayout pipelineLayout;
-	size_t description_hash;
 
 	VulkanSurface* surface;
 	const VulkanLogicDevice* device;
-
-	// FIXME: This would work better as a set, but hashing escapes me for right now.
-	std::unordered_set<VulkanObject*> objects;
-
-	VkDescriptorPool descriptorPool;
-	std::vector<VkDescriptorSet> descriptorSets;
-
-	VkDescriptorSetLayout descriptorSetLayout;
-
-	std::vector<VkBuffer> uniformBuffers;
-	std::vector<VkDeviceMemory> uniformBuffersMemory;
-	std::vector<void*> uniformBuffersMapped;
-
-	glm::mat4 modelMatrix;
+	public:
 	
-	VulkanPipeline(VkPipeline ptr, VulkanPipelineInfo* creationInfo, VulkanSurface* surface, const VulkanLogicDevice* device, const VulkanPhysicalDevice* physicalDevice);
+	VkPipelineLayout pipelineLayout;
+	
+	VulkanPipeline(VkPipeline ptr, VulkanPipelineInfo creationInfo, VulkanSurface* surface, const VulkanLogicDevice* device, const VulkanPhysicalDevice* physicalDevice);
 
 	void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t image_index);
 	void destroy();
-
-	void attachObject(VulkanObject* o);
-	void removeObject(VulkanObject* o);
 };

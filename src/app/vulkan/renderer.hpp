@@ -2,13 +2,11 @@
 #include <vulkan/vulkan.hpp>
 #include <vector>
 #include <unordered_set>
-#include <unordered_map>
 #include <SDL3/SDL_video.h>
 #include "devices.hpp"
 #include "surface.hpp"
-#include "shader.hpp"
 #include "helper.hpp"
-#include "pipeline.hpp"
+#include "object.hpp"
 
 struct VulkanRenderPass {
 	VkRenderPass ptr;
@@ -17,8 +15,7 @@ struct VulkanRenderPass {
 	void destroy(VkDevice device);
 };
 
-struct VulkanPipeline;
-struct VulkanPipelineInfo;
+class VulkanObject;
 
 class VulkanRenderer {
 	VulkanSurface* surface;
@@ -27,8 +24,10 @@ class VulkanRenderer {
 	const VulkanPhysicalDevice* physicalDevice;
 	
 	VulkanRenderPass renderPass;
-	std::unordered_map<size_t, VulkanPipeline*> graphicsPipelines;
-	std::vector<VulkanPipelineInfo*> creationInfo;
+
+	// TODO: Probably a tree-based system would make things faster.
+	// The things to actually render:
+	std::unordered_set<VulkanObject*> vulkanObjects;
 
 	VkCommandPool commandPool;
 	VkCommandBuffer commandBuffer;
@@ -48,15 +47,13 @@ class VulkanRenderer {
 	const VkCommandPool getCommandPool() const { return commandPool; }
 	const VulkanRenderPass& getRenderPass() const { return renderPass; }
 	VulkanSurface* getSurface() const { return surface; } 
-	VulkanPipeline* getPipeline(std::size_t hash) { if (auto find = graphicsPipelines.find(hash); find != graphicsPipelines.end()) { return find->second; } else { return nullptr; } }
 
 	VulkanRenderer() {}
 	
 	VulkanRenderer(VulkanSurface* surface, const VulkanLogicDevice* device, const VulkanPhysicalDevice* physicalDevice);
 
-	// Take ownership of a VulkanPipeline:
-	void attachPendingGraphicsPipeline(VulkanPipelineInfo* info);
-	void intializePipelines();
+	void attachObject(VulkanObject* o);
+	void removeObject(VulkanObject* o);
 
 	void refreshSwapChain();
 	void draw();
