@@ -7,6 +7,7 @@
 #include "surface.hpp"
 #include "helper.hpp"
 #include "object.hpp"
+#include "camera.hpp"
 
 struct VulkanRenderPass {
 	VkRenderPass ptr;
@@ -16,6 +17,7 @@ struct VulkanRenderPass {
 };
 
 class VulkanObject;
+class VulkanCamera;
 
 /// @brief A class which renders all owned `VulkanObject`s to a `VulkanSurface`.
 /// 
@@ -27,6 +29,9 @@ class VulkanRenderer {
 	const VulkanPhysicalDevice* physicalDevice;
 	
 	VulkanRenderPass renderPass;
+
+	/// @brief  Camera this renderer is attached to. I might add support for more cameras later.
+	VulkanCamera* camera;
 
 	// TODO: Probably a tree-based system would make things faster.
 	// The things to actually render:
@@ -61,7 +66,7 @@ class VulkanRenderer {
 
 	public:
 	enum DescriptorKind {
-		TRANSFORM = 0
+		TRANSFORMS = 0
 	};
 
 	const VkDescriptorSetLayout* getDescriptorSetLayout() { return &descriptorSetLayout; }
@@ -72,8 +77,6 @@ class VulkanRenderer {
 	const VkCommandPool getCommandPool() const { return commandPool; }
 	const VulkanRenderPass& getRenderPass() const { return renderPass; }
 	VulkanSurface* getSurface() const { return surface; } 
-
-	VulkanRenderer() {}
 	
 	VulkanRenderer(VulkanSurface* surface, const VulkanLogicDevice* device, const VulkanPhysicalDevice* physicalDevice);
 

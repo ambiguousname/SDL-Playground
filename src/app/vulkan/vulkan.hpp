@@ -16,7 +16,7 @@ class VulkanWrapper {
 	VulkanLogicDevice device;
 
 	VulkanSurface surface;
-	VulkanRenderer renderer;
+	VulkanRenderer* renderer;
 
 	VkDebugUtilsMessengerEXT debugMessenger;
 
@@ -29,9 +29,9 @@ class VulkanWrapper {
 	public:
 	VulkanRenderer* createRenderer();
 	const VulkanLogicDevice* getDevice() const { return &device; }
-	VulkanRenderer* getRenderer() { return &renderer; }
+	VulkanRenderer* getRenderer() { return renderer; }
 
 	void destroy();
-	void draw() { renderer.draw(); vkDeviceWaitIdle(device.ptr);  }
+	void draw() { renderer->draw(); vkDeviceWaitIdle(device.ptr);  }
 	VulkanWrapper(const App* app);
 };

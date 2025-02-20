@@ -114,6 +114,7 @@ VulkanPipelineInfo::VulkanPipelineInfo(VulkanRenderer* renderer, ShaderCreationI
 }
 
 VulkanPipeline::VulkanPipeline(VkPipeline ptr, VulkanPipelineInfo creationInfo, VulkanSurface* surface, const VulkanLogicDevice* device, const VulkanPhysicalDevice* physicalDevice) : ptr(ptr), pipelineLayout(creationInfo.pipelineLayout), surface(surface), device(device) {
+	creationInfo.destroy();
 }
 
 void VulkanPipeline::destroy() {

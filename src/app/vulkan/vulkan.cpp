@@ -49,12 +49,14 @@ VulkanWrapper::VulkanWrapper(const App* app) : app(app) {
 
 VulkanRenderer* VulkanWrapper::createRenderer() {
 	// TODO: Modify to create default graphics pipelines.
-	renderer = VulkanRenderer(&surface, &device, &physicalDevice);
-	return &renderer;
+	renderer = new VulkanRenderer(&surface, &device, &physicalDevice);
+	return renderer;
 }
 
 void VulkanWrapper::destroy() {
-	renderer.destroy();
+	renderer->destroy();
+	delete renderer;
+
 	surface.destroy();
 	device.destroy();
 	destroyDebug();

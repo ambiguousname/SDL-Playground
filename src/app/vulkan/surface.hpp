@@ -22,6 +22,7 @@ struct VulkanSwapChain {
 	VulkanSwapChain() {}
 };
 
+/// @brief A window that we render to.
 struct VulkanSurface {
 	VkSurfaceKHR ptr;
 	VulkanSwapChain swapChain;

@@ -68,12 +68,12 @@ VulkanObject::VulkanObject(VulkanRenderer* renderer, VulkanPipelineInfo creation
 	
 	// TODO: https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight
 	// Uniform buffers:
-	VkDeviceSize bufferSize = sizeof(DisplayMatrices) + sizeof(ModelMatrix);
+	VkDeviceSize bufferSize = sizeof(ModelMatrix);
 	uniformBuffers.resize(1);
 	uniformBuffersMemory.resize(1);
 	uniformBuffersMapped.resize(1);
 
-	transformDescriptorSet = renderer->getDescriptorSet(VulkanRenderer::DescriptorKind::TRANSFORM);
+	transformDescriptorSet = renderer->getDescriptorSet(VulkanRenderer::DescriptorKind::TRANSFORMS);
 
 	for (size_t i = 0; i < 1; i++) {
 		VulkanHelper::createBuffer(device->ptr, physicalDevice, bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffers[i], uniformBuffersMemory[i]);
@@ -84,13 +84,13 @@ VulkanObject::VulkanObject(VulkanRenderer* renderer, VulkanPipelineInfo creation
 		// TODO: https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight
 		bufferInfo.buffer = uniformBuffers[0];
 		bufferInfo.offset = 0;
-		bufferInfo.range = sizeof(DisplayMatrices) + sizeof(ModelMatrix);
+		bufferInfo.range = sizeof(ModelMatrix);
 
 		VkWriteDescriptorSet descriptorWrite{};
 		descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		// TODO: https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight
 		descriptorWrite.dstSet = transformDescriptorSet;
-		descriptorWrite.dstBinding = 0;
+		descriptorWrite.dstBinding = 1;
 		descriptorWrite.dstArrayElement = 0;
 		descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		descriptorWrite.descriptorCount = 1;
@@ -99,7 +99,6 @@ VulkanObject::VulkanObject(VulkanRenderer* renderer, VulkanPipelineInfo creation
 		descriptorWrite.pTexelBufferView = nullptr; // Optional
 		vkUpdateDescriptorSets(device->ptr, 1, &descriptorWrite, 0, nullptr);
 	}
-	creationInfo.destroy();
 }
 
 void VulkanObject::destroy() {
@@ -119,23 +118,14 @@ void VulkanObject::destroy() {
 	vkFreeMemory(device->ptr, indexBufferMemory, nullptr);
 }
 
-#include <glm/ext/matrix_transform.hpp>
-#include <glm/ext/matrix_clip_space.hpp>
+#include "camera.hpp"
 void VulkanObject::draw(VkCommandBuffer buffer, uint32_t image_index) {
+	memcpy(uniformBuffersMapped[0], &model, sizeof(ModelMatrix));
+	
 	VkBuffer vertexBuffers[] = {vertexBuffer};
 	VkDeviceSize offsets[] = {0};
 	vkCmdBindVertexBuffers(buffer, 0, 1, vertexBuffers, offsets);
 	vkCmdBindIndexBuffer(buffer, indexBuffer, 0, VK_INDEX_TYPE_UINT16);
-	
-	// TODO: Make this flexible.
-	DisplayMatrices test{};
-	test.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	test.proj = glm::perspective(glm::radians(45.0f), 0.5f, 0.1f, 10.0f);
-	// test.proj[1][1] *= -1;
-	
-	// TODO: https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight
-	memcpy(uniformBuffersMapped[0], &test, sizeof(test));
-	memcpy((void*)((intptr_t)uniformBuffersMapped[0] + sizeof(DisplayMatrices)), &model, sizeof(glm::mat4));
 
 	// TODO: https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight
 	vkCmdBindDescriptorSets(buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->pipelineLayout, 0, 1, &transformDescriptorSet, 0, nullptr);

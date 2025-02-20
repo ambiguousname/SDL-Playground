@@ -60,6 +60,9 @@ void VulkanRenderer::destroy() {
 	vkDestroySemaphore(device->ptr, renderFinished, nullptr);
 	vkDestroyFence(device->ptr, inFlight, nullptr);
 	vkDestroyCommandPool(device->ptr, commandPool, nullptr);
+
+	camera->destroy();
+	delete camera;
 }
 
 VulkanRenderer::VulkanRenderer(VulkanSurface* surface, const VulkanLogicDevice* device, const VulkanPhysicalDevice* physicalDevice) : surface(surface), device(device), physicalDevice(physicalDevice) {
@@ -68,6 +71,7 @@ VulkanRenderer::VulkanRenderer(VulkanSurface* surface, const VulkanLogicDevice* 
 	createCommandPool();
 	createSync();
 	createGlobalDescriptorPool();
+	camera = new VulkanCamera(this);
 }
 
 void VulkanRenderer::createCommandPool() {
@@ -118,7 +122,7 @@ void VulkanRenderer::createGlobalDescriptorPool() {
 	VkDescriptorPoolSize poolSize{};
 	poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 	// TODO: https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight
-	poolSize.descriptorCount = 1;
+	poolSize.descriptorCount = 2;
 
 	VkDescriptorPoolCreateInfo poolInfo{};
 	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -132,19 +136,29 @@ void VulkanRenderer::createGlobalDescriptorPool() {
 	}
 
 	// Descriptor information for Object/Camera model displays:
-	// TODO: Make more flexible.
-	VkDescriptorSetLayoutBinding projectionLayoutBinding{};
-	projectionLayoutBinding.binding = 0;
-	projectionLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	projectionLayoutBinding.descriptorCount = 1;
-	projectionLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-	projectionLayoutBinding.pImmutableSamplers = nullptr;
+	VkDescriptorSetLayoutBinding cameraMatrices{
+		.binding = 0,
+		.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+		.descriptorCount = 1,
+		.stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
+		.pImmutableSamplers = nullptr
+	};
+
+	VkDescriptorSetLayoutBinding objectMatrix{
+		.binding = 1,
+		.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+		.descriptorCount = 1,
+		.stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
+		.pImmutableSamplers = nullptr
+	};
+
+	std::vector<VkDescriptorSetLayoutBinding> descriptorSetLayouts({cameraMatrices, objectMatrix});
 
 	
 	VkDescriptorSetLayoutCreateInfo layoutInfo{};
 	layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-	layoutInfo.bindingCount = 1;
-	layoutInfo.pBindings = &projectionLayoutBinding;
+	layoutInfo.bindingCount = descriptorSetLayouts.size();
+	layoutInfo.pBindings = descriptorSetLayouts.data();
 
 	if (vkCreateDescriptorSetLayout(device->ptr, &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) {
 		throw AppError("Vulkan could not create a Descriptor Set Layout for shader.");
@@ -161,7 +175,7 @@ void VulkanRenderer::createGlobalDescriptorPool() {
 	allocInfo.pSetLayouts = layouts.data();
 
 	// TODO: https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight
-	descriptorSets.resize(1);
+	descriptorSets.resize(layouts.size());
 	if (vkAllocateDescriptorSets(device->ptr, &allocInfo, descriptorSets.data()) != VK_SUCCESS) {
 		throw AppError("Vulkan could not create descriptor sets.");
 	}
@@ -178,6 +192,8 @@ void VulkanRenderer::refreshSwapChain() {
 	old.destroy();
 }
 
+#include <glm/ext/matrix_transform.hpp>
+#include <glm/ext/matrix_clip_space.hpp>
 void VulkanRenderer::recordCommandBuffers(uint32_t image_index) {
 	VkCommandBufferBeginInfo begin_info{};
 	begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -197,6 +213,8 @@ void VulkanRenderer::recordCommandBuffers(uint32_t image_index) {
 	VkClearValue clearColor = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
 	render_pass_info.clearValueCount = 1;
 	render_pass_info.pClearValues = &clearColor;
+
+	camera->draw();
 
 	vkCmdBeginRenderPass(commandBuffer, &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
 	for (auto o : vulkanObjects) {

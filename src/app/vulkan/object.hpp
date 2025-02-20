@@ -17,11 +17,6 @@ struct VulkanVertex {
 	glm::vec3 color;
 };
 
-struct DisplayMatrices {
-	glm::mat4 view;
-	glm::mat4 proj;
-};
-
 typedef glm::mat4 ModelMatrix;
 
 /// An object that shares a ton of information.
