@@ -2,8 +2,8 @@
 
 
 VulkanCamera::VulkanCamera(VulkanRenderer* renderer, float w, float h, float fov, float nearZ, float farZ) : device(renderer->getDevice()), w(w), h(h), fov(fov), nearZ(nearZ), farZ(farZ)  {
-	updateProjection();
-	update();
+	display.projection = glm::perspective(glm::radians(fov), w/h, nearZ, farZ);
+	display.view = glm::lookAt(position, position + forward, up);
 
 	const VulkanPhysicalDevice* physicalDevice = renderer->getPhysicalDevice();
 
@@ -35,13 +35,13 @@ VulkanCamera::VulkanCamera(VulkanRenderer* renderer, float w, float h, float fov
 	}
 }
 
+void VulkanCamera::translate(glm::vec3 add)  {
+	position += add;
+	glm::translate(display.view, -add);
+}
+
 void VulkanCamera::draw() {
-	// TODO: Make this flexible.
-	DisplayMatrices test{};
-	test.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	test.projection = glm::perspective(glm::radians(45.0f), 0.5f, 0.1f, 10.0f);
-	// test.proj[1][1] *= -1;
-	memcpy(projectionBufferMapped, &test, sizeof(DisplayMatrices));
+	memcpy(projectionBufferMapped, &display, sizeof(DisplayMatrices));
 }
 
 void VulkanCamera::destroy() {

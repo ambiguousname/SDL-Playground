@@ -71,7 +71,7 @@ VulkanRenderer::VulkanRenderer(VulkanSurface* surface, const VulkanLogicDevice* 
 	createCommandPool();
 	createSync();
 	createGlobalDescriptorPool();
-	camera = new VulkanCamera(this);
+	camera = new VulkanCamera(this, surface->swapChain.extents.width, surface->swapChain.extents.height);
 }
 
 void VulkanRenderer::createCommandPool() {

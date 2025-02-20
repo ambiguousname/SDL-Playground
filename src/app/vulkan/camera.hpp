@@ -21,8 +21,8 @@ class VulkanCamera {
 
 	DisplayMatrices display;
 
-	glm::vec3 position = glm::vec3(0.0f, 0.0f, -3.0f);
-	glm::vec3 forward = glm::vec3(0.0f, 0.0f, 1.0f);
+	glm::vec3 position = glm::vec3(2.0f, 2.0f, 2.0f);
+	glm::vec3 forward = glm::vec3(-2.0f, -2.0f, -2.0f);
 	glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
 
 	float fov;
@@ -30,22 +30,12 @@ class VulkanCamera {
 	float farZ;
 	float w;
 	float h;
-	
-	void updateProjection() {
-		display.projection = glm::perspective(glm::radians(fov), w/h, nearZ, farZ);
-	}
-	void update() {
-		display.view = glm::lookAt(position, position + forward, up);
-	}
 
 	public:
-	VulkanCamera(VulkanRenderer* renderer, float w=1.0f, float h=1.0f, float fov=45.0f, float nearZ=0.1f, float farZ=100.0f);
+	VulkanCamera(VulkanRenderer* renderer, float w, float h, float fov=45.0f, float nearZ=0.1f, float farZ=100.0f);
 
 	void draw();
 	void destroy();
 
-	void translate(glm::vec3 add) {
-		position += add;
-		update();
-	}
+	void translate(glm::vec3 add);
 };
