@@ -1,6 +1,7 @@
 - Add 2 binding sets (one for camera/projection data, one for per-object position): https://developer.nvidia.com/vulkan-shader-resource-binding. This image is closest to what I'm looking for: https://d29g4g2dyqv443.cloudfront.net/sites/default/files/akamai/gameworks/blog/Vulkan_Shader_Resource/vulkan_resbinding_effective.png
 
-
+- Revise object system to use instancing.
+	- Maybe also figure out a way to re-use pipelines efficiently?
 - Make binding set system more generic
 - Frames in flight
 

@@ -15,7 +15,10 @@ const std::vector<uint16_t> indices = {
 
 // TODO: Multiple created objects need to be made into one allocation.
 // Indices should also be merged into the same buffer as an index.
-VulkanObject::VulkanObject(const VulkanLogicDevice* device, const VulkanPhysicalDevice* physicalDevice, VulkanSurface* surface, VulkanPipelineInfo creationInfo, VkCommandPool commandPool) : device(device), descriptorSetLayout(creationInfo.descriptorSetLayout) {
+VulkanObject::VulkanObject(VulkanRenderer* renderer, VulkanPipelineInfo creationInfo) : device(renderer->getDevice()), description(creationInfo.getShaderDescription()), model(glm::mat4(1.0f)) {
+	const VulkanPhysicalDevice* physicalDevice = renderer->getPhysicalDevice();
+
+	// TODO: Move all this to before object creation.
 	VkBuffer stagingBuffer;
 	VkDeviceMemory stagingBufferMemory;
 
@@ -29,7 +32,7 @@ VulkanObject::VulkanObject(const VulkanLogicDevice* device, const VulkanPhysical
 
 	VulkanHelper::createBuffer(device->ptr, physicalDevice, size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
 	
-	VulkanHelper::copyBuffer(device, commandPool, stagingBuffer, vertexBuffer, size);
+	VulkanHelper::copyBuffer(device, renderer->getCommandPool(), stagingBuffer, vertexBuffer, size);
 
 	vkDestroyBuffer(device->ptr, stagingBuffer, nullptr);
 	vkFreeMemory(device->ptr, stagingBufferMemory, nullptr);
@@ -46,7 +49,7 @@ VulkanObject::VulkanObject(const VulkanLogicDevice* device, const VulkanPhysical
 	vkUnmapMemory(device->ptr, indexStagingMemory);
 
 	VulkanHelper::createBuffer(device->ptr, physicalDevice, indexSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
-	VulkanHelper::copyBuffer(device, commandPool, indexStaging, indexBuffer, indexSize);
+	VulkanHelper::copyBuffer(device, renderer->getCommandPool(), indexStaging, indexBuffer, indexSize);
 
 	vkDestroyBuffer(device->ptr, indexStaging, nullptr);
 	vkFreeMemory(device->ptr, indexStagingMemory, nullptr);
@@ -60,38 +63,7 @@ VulkanObject::VulkanObject(const VulkanLogicDevice* device, const VulkanPhysical
 		throw AppError("Vulkan could not create graphics pipelines.");
 	}
 
-	pipeline = new VulkanPipeline(pipelinePtrs[0], creationInfo, surface, device, physicalDevice);
-	
-	VkDescriptorPoolSize poolSize{};
-	poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	// TODO: https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight
-	poolSize.descriptorCount = 1;
-
-	VkDescriptorPoolCreateInfo poolInfo{};
-	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-	poolInfo.poolSizeCount = 1;
-	poolInfo.pPoolSizes = &poolSize;
-	// TODO: https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight
-	poolInfo.maxSets = 1;
-
-	if (vkCreateDescriptorPool(device->ptr, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS) {
-		throw AppError("Vulkan could not create descriptor pool.");
-	}
-
-	// TODO: https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight
-	std::vector<VkDescriptorSetLayout> layouts(1, descriptorSetLayout);
-	VkDescriptorSetAllocateInfo allocInfo{};
-	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-	allocInfo.descriptorPool = descriptorPool;
-	// TODO: https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight
-	allocInfo.descriptorSetCount = 1;
-	allocInfo.pSetLayouts = layouts.data();
-
-	// TODO: https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight
-	descriptorSets.resize(1);
-	if (vkAllocateDescriptorSets(device->ptr, &allocInfo, descriptorSets.data()) != VK_SUCCESS) {
-		throw AppError("Vulkan could not create descriptor sets.");
-	}
+	pipeline = new VulkanPipeline(pipelinePtrs[0], creationInfo, renderer->getSurface(), device, physicalDevice);
 
 	
 	// TODO: https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight
@@ -100,6 +72,8 @@ VulkanObject::VulkanObject(const VulkanLogicDevice* device, const VulkanPhysical
 	uniformBuffers.resize(1);
 	uniformBuffersMemory.resize(1);
 	uniformBuffersMapped.resize(1);
+
+	transformDescriptorSet = renderer->getDescriptorSet(VulkanRenderer::DescriptorKind::TRANSFORM);
 
 	for (size_t i = 0; i < 1; i++) {
 		VulkanHelper::createBuffer(device->ptr, physicalDevice, bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffers[i], uniformBuffersMemory[i]);
@@ -115,7 +89,7 @@ VulkanObject::VulkanObject(const VulkanLogicDevice* device, const VulkanPhysical
 		VkWriteDescriptorSet descriptorWrite{};
 		descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		// TODO: https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight
-		descriptorWrite.dstSet = descriptorSets[0];
+		descriptorWrite.dstSet = transformDescriptorSet;
 		descriptorWrite.dstBinding = 0;
 		descriptorWrite.dstArrayElement = 0;
 		descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -125,7 +99,6 @@ VulkanObject::VulkanObject(const VulkanLogicDevice* device, const VulkanPhysical
 		descriptorWrite.pTexelBufferView = nullptr; // Optional
 		vkUpdateDescriptorSets(device->ptr, 1, &descriptorWrite, 0, nullptr);
 	}
-
 	creationInfo.destroy();
 }
 
@@ -138,9 +111,6 @@ void VulkanObject::destroy() {
         vkDestroyBuffer(device->ptr, uniformBuffers[i], nullptr);
         vkFreeMemory(device->ptr, uniformBuffersMemory[i], nullptr);
     }
-
-	vkDestroyDescriptorPool(device->ptr, descriptorPool, nullptr);
-	vkDestroyDescriptorSetLayout(device->ptr, descriptorSetLayout, nullptr);
 	
 	vkDestroyBuffer(device->ptr, vertexBuffer, nullptr);
 	vkFreeMemory(device->ptr, vertexBufferMemory, nullptr);
@@ -165,12 +135,10 @@ void VulkanObject::draw(VkCommandBuffer buffer, uint32_t image_index) {
 	
 	// TODO: https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight
 	memcpy(uniformBuffersMapped[0], &test, sizeof(test));
-
-	glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(0.1f, 0.0f, 0.0f));
 	memcpy((void*)((intptr_t)uniformBuffersMapped[0] + sizeof(DisplayMatrices)), &model, sizeof(glm::mat4));
 
 	// TODO: https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight
-	vkCmdBindDescriptorSets(buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->pipelineLayout, 0, 1, &descriptorSets[0], 0, nullptr);
+	vkCmdBindDescriptorSets(buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->pipelineLayout, 0, 1, &transformDescriptorSet, 0, nullptr);
 	
 	pipeline->recordCommandBuffer(buffer, image_index);
 	vkCmdDrawIndexed(buffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);

@@ -21,17 +21,19 @@ struct VulkanPipelineInfo {
 	VkPipelineColorBlendAttachmentState colorBlendAttachment;
 	VkPipelineColorBlendStateCreateInfo colorBlending;
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo;
-	ShaderDescription description;
+	ShaderCreationInfo shaderCreationInfo;
 	
 	public:
 
 	VkGraphicsPipelineCreateInfo pipelineInfo;
 	const VulkanLogicDevice* device;
 	VkPipelineLayout pipelineLayout;
-	VkDescriptorSetLayout descriptorSetLayout;
 	
-	VulkanPipelineInfo(VulkanRenderer* renderer, ShaderDescription description);
-	void destroy();
+	VulkanPipelineInfo(VulkanRenderer* renderer, ShaderCreationInfo creationInfo);
+	ShaderDescription getShaderDescription() { return shaderCreationInfo.getDescription(); }
+	void destroy() {
+		shaderCreationInfo.destroy();
+	}
 };
 
 class VulkanPipeline {

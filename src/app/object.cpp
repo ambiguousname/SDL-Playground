@@ -31,12 +31,12 @@ Object::Object(App& app) {
 		VulkanShader vert(r->getDevice()->ptr, "shaders/main.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
 		VulkanShader frag(r->getDevice()->ptr, "shaders/main.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
 
-		ShaderDescription description = ShaderDescription(bindingDescriptions, attributeDescriptions,  std::vector<VulkanShader>({vert, frag}));
+		ShaderCreationInfo shaderInfo = ShaderCreationInfo(bindingDescriptions, attributeDescriptions,  std::vector<VulkanShader>({vert, frag}));
 
-		VulkanPipelineInfo n = VulkanPipelineInfo(r, description);
+		VulkanPipelineInfo n = VulkanPipelineInfo(r, shaderInfo);
 		
 		// Move ownership into Vulkan so it gets destroyed when Vulkan is done with it.
-		inner = (void*)new VulkanObject(r->getDevice(), r->getPhysicalDevice(), r->getSurface(), n, r->getCommandPool());
+		inner = (void*)new VulkanObject(r, n);
 		
 		r->attachObject((VulkanObject*)inner);
 	} else {

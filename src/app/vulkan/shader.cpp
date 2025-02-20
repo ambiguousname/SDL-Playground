@@ -35,7 +35,7 @@ void VulkanShader::destroy() {
 	vkDestroyShaderModule(device, shaderModule, nullptr);
 }
 
-ShaderDescription::ShaderDescription(std::vector<VkVertexInputBindingDescription> bindings, std::vector<VkVertexInputAttributeDescription> attributes, std::vector<VulkanShader> shaders) : bindings(bindings), attributes(attributes), shaders(shaders) {
+ShaderCreationInfo::ShaderCreationInfo(std::vector<VkVertexInputBindingDescription> bindings, std::vector<VkVertexInputAttributeDescription> attributes, std::vector<VulkanShader> shaders) : bindings(bindings), attributes(attributes), shaders(shaders) {
 
 	vertexInfo = VkPipelineVertexInputStateCreateInfo{};
 	vertexInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -51,8 +51,17 @@ ShaderDescription::ShaderDescription(std::vector<VkVertexInputBindingDescription
 	}
 }
 
-void ShaderDescription::destroy()  {
+void ShaderCreationInfo::destroy() {
 	for (auto shader : shaders) {
 		shader.destroy();
 	}
+}
+
+ShaderDescription ShaderCreationInfo::getDescription() {
+	return ShaderDescription();
+}
+
+
+ShaderDescription::ShaderDescription() {
+	
 }

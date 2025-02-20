@@ -51,6 +51,10 @@ void VulkanRenderer::destroy() {
 	for (auto o : vulkanObjects) {
 		o->destroy();
 	}
+
+	vkDestroyDescriptorPool(device->ptr, globalDescriptorPool, nullptr);
+	vkDestroyDescriptorSetLayout(device->ptr, descriptorSetLayout, nullptr);
+
 	renderPass.destroy(device->ptr);
 	vkDestroySemaphore(device->ptr, imageAvailable, nullptr);
 	vkDestroySemaphore(device->ptr, renderFinished, nullptr);
@@ -63,6 +67,7 @@ VulkanRenderer::VulkanRenderer(VulkanSurface* surface, const VulkanLogicDevice* 
 	surface->swapChain.createFramebuffers(renderPass.ptr);
 	createCommandPool();
 	createSync();
+	createGlobalDescriptorPool();
 }
 
 void VulkanRenderer::createCommandPool() {
@@ -106,6 +111,59 @@ void VulkanRenderer::createSync() {
  
 	if (vkCreateFence(device->ptr, &fence_info, nullptr, &inFlight) != VK_SUCCESS) {
 		throw AppError("Vulkan could not create inFlight fence.");
+	}
+}
+
+void VulkanRenderer::createGlobalDescriptorPool() {
+	VkDescriptorPoolSize poolSize{};
+	poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	// TODO: https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight
+	poolSize.descriptorCount = 1;
+
+	VkDescriptorPoolCreateInfo poolInfo{};
+	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	poolInfo.poolSizeCount = 1;
+	poolInfo.pPoolSizes = &poolSize;
+	// TODO: https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight
+	poolInfo.maxSets = 1;
+
+	if (vkCreateDescriptorPool(device->ptr, &poolInfo, nullptr, &globalDescriptorPool) != VK_SUCCESS) {
+		throw AppError("Vulkan could not create descriptor pool.");
+	}
+
+	// Descriptor information for Object/Camera model displays:
+	// TODO: Make more flexible.
+	VkDescriptorSetLayoutBinding projectionLayoutBinding{};
+	projectionLayoutBinding.binding = 0;
+	projectionLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	projectionLayoutBinding.descriptorCount = 1;
+	projectionLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	projectionLayoutBinding.pImmutableSamplers = nullptr;
+
+	
+	VkDescriptorSetLayoutCreateInfo layoutInfo{};
+	layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	layoutInfo.bindingCount = 1;
+	layoutInfo.pBindings = &projectionLayoutBinding;
+
+	if (vkCreateDescriptorSetLayout(device->ptr, &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) {
+		throw AppError("Vulkan could not create a Descriptor Set Layout for shader.");
+	}
+
+	// TODO: https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight
+	std::vector<VkDescriptorSetLayout> layouts(1, descriptorSetLayout);
+
+	VkDescriptorSetAllocateInfo allocInfo{};
+	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	allocInfo.descriptorPool = globalDescriptorPool;
+	// TODO: https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight
+	allocInfo.descriptorSetCount = layouts.size();
+	allocInfo.pSetLayouts = layouts.data();
+
+	// TODO: https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight
+	descriptorSets.resize(1);
+	if (vkAllocateDescriptorSets(device->ptr, &allocInfo, descriptorSets.data()) != VK_SUCCESS) {
+		throw AppError("Vulkan could not create descriptor sets.");
 	}
 }
 
