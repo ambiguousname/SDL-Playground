@@ -60,9 +60,6 @@ void VulkanRenderer::destroy() {
 	vkDestroySemaphore(device->ptr, renderFinished, nullptr);
 	vkDestroyFence(device->ptr, inFlight, nullptr);
 	vkDestroyCommandPool(device->ptr, commandPool, nullptr);
-
-	camera->destroy();
-	delete camera;
 }
 
 VulkanRenderer::VulkanRenderer(VulkanSurface* surface, const VulkanLogicDevice* device, const VulkanPhysicalDevice* physicalDevice) : surface(surface), device(device), physicalDevice(physicalDevice) {
@@ -71,7 +68,6 @@ VulkanRenderer::VulkanRenderer(VulkanSurface* surface, const VulkanLogicDevice* 
 	createCommandPool();
 	createSync();
 	createGlobalDescriptorPool();
-	camera = new VulkanCamera(this, surface->swapChain.extents.width, surface->swapChain.extents.height);
 }
 
 void VulkanRenderer::createCommandPool() {
@@ -213,8 +209,6 @@ void VulkanRenderer::recordCommandBuffers(uint32_t image_index) {
 	VkClearValue clearColor = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
 	render_pass_info.clearValueCount = 1;
 	render_pass_info.pClearValues = &clearColor;
-
-	camera->draw();
 
 	vkCmdBeginRenderPass(commandBuffer, &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
 	for (auto o : vulkanObjects) {

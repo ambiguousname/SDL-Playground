@@ -30,9 +30,6 @@ class VulkanRenderer {
 	
 	VulkanRenderPass renderPass;
 
-	/// @brief  Camera this renderer is attached to. I might add support for more cameras later.
-	VulkanCamera* camera;
-
 	// TODO: Probably a tree-based system would make things faster.
 	// The things to actually render:
 	std::unordered_set<VulkanObject*> vulkanObjects;

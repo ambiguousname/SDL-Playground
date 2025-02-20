@@ -14,11 +14,14 @@ void Main::preload() {
 	move_control = player_controller.getControl("move");
 }
 
+// TODO: Fix allocation, these currently do not destroy.
 void Main::create() {
 	test = Object(app);
+	cam = Camera(app);
 }
 
 void Main::update() {
+	cam.update();
 	player_controller.update();
 	vec2 move_val = move_control->getValue().vec;
 	// player.x += move_val.x;
