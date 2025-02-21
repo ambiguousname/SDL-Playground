@@ -15,7 +15,7 @@ const std::vector<uint16_t> indices = {
 
 // TODO: Multiple created objects need to be made into one allocation.
 // Indices should also be merged into the same buffer as an index.
-VulkanObject::VulkanObject(VulkanRenderer* renderer, VulkanPipelineInfo creationInfo) : device(renderer->getDevice()), description(creationInfo.getShaderDescription()), model(glm::mat4(1.0f)) {
+VulkanObject::VulkanObject(VulkanRenderer* renderer, VulkanPipelineInfo creationInfo) : device(renderer->getDevice()), description(creationInfo.getShaderDescription()) {
 	const VulkanPhysicalDevice* physicalDevice = renderer->getPhysicalDevice();
 
 	// TODO: Move all this to before object creation.
@@ -118,9 +118,7 @@ void VulkanObject::destroy() {
 	vkFreeMemory(device->ptr, indexBufferMemory, nullptr);
 }
 
-#include "camera.hpp"
 void VulkanObject::draw(VkCommandBuffer buffer, uint32_t image_index) {
-	memcpy(uniformBuffersMapped[0], &model, sizeof(ModelMatrix));
 	
 	VkBuffer vertexBuffers[] = {vertexBuffer};
 	VkDeviceSize offsets[] = {0};
@@ -132,4 +130,8 @@ void VulkanObject::draw(VkCommandBuffer buffer, uint32_t image_index) {
 	
 	pipeline->recordCommandBuffer(buffer, image_index);
 	vkCmdDrawIndexed(buffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
+}
+
+void VulkanObject::updateModel(ModelMatrix mat) {
+	memcpy(uniformBuffersMapped[0], &mat, sizeof(ModelMatrix));
 }

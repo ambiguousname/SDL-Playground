@@ -22,8 +22,10 @@ void Main::create() {
 
 void Main::update() {
 	cam.update();
+	test.update();
 	player_controller.update();
 	vec2 move_val = move_control->getValue().vec;
+	test.position = glm::translate(test.position, vec3(move_val.x, move_val.y, 0) * 0.1f);
 	// player.x += move_val.x;
 	// player.y += move_val.y;
 	// SDL_SetRenderDrawColor(app.renderer, 0, 0, 0, 0xff);
