@@ -1,7 +1,6 @@
 #include "mesh.hpp"
 
 Mesh::Mesh(App& app) : Object(app) {
-	position = glm::mat4(1.0f);
 	if (context == VULKAN) {
 		VulkanRenderer* r = ((VulkanRenderer*)renderer);
 
@@ -32,18 +31,12 @@ Mesh::Mesh(App& app) : Object(app) {
 		
 		// Move ownership into Vulkan so it gets destroyed when Vulkan is done with it.
 		inner = (void*)new VulkanObject(r, n);
-		
-		((VulkanObject*)inner)->updateModel(position);
+
+		model = ((VulkanObject*)inner)->getModel();
 		
 		r->attachObject((VulkanObject*)inner);
 	} else {
 		throw AppError("Context does not support object rendering.");
-	}
-}
-
-void Mesh::_update() {
-	if (context == VULKAN) {
-		((VulkanObject*)inner)->updateModel(position);
 	}
 }
 

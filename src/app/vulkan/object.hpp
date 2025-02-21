@@ -42,9 +42,11 @@ class VulkanObject {
 	std::vector<VkDeviceMemory> uniformBuffersMemory;
 	std::vector<void*> uniformBuffersMapped;
 
+	ModelMatrix model;
+
 	public:
+	ModelMatrix* getModel() { return &model; }
 	VulkanObject(VulkanRenderer* renderer, VulkanPipelineInfo creationInfo);
-	void updateModel(ModelMatrix mat);
 	void destroy();
 	void draw(VkCommandBuffer buffer, uint32_t image_index);
 };

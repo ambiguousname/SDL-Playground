@@ -3,10 +3,12 @@
 
 class Mesh : public Object {
 	protected:
-	void _update() override;
 	void _destroy() override;
+	glm::mat4* position;
 	public:
-	glm::mat4 position;
+	void setPosition(glm::mat4 p) { *position = p; }
+	glm::mat4 getPosition() { return *position; }
+	void translate(glm::vec3 translation) { *position = glm::translate(*position, translation); }
 	Mesh(App& app);
 	Mesh() {}
 };

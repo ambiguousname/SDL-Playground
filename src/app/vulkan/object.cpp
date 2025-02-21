@@ -15,7 +15,8 @@ const std::vector<uint16_t> indices = {
 
 // TODO: Multiple created objects need to be made into one allocation.
 // Indices should also be merged into the same buffer as an index.
-VulkanObject::VulkanObject(VulkanRenderer* renderer, VulkanPipelineInfo creationInfo) : device(renderer->getDevice()), description(creationInfo.getShaderDescription()) {
+VulkanObject::VulkanObject(VulkanRenderer* renderer, VulkanPipelineInfo creationInfo) : device(renderer->getDevice()), description(creationInfo.getShaderDescription()), model(glm::mat4(1.0f)) {
+
 	const VulkanPhysicalDevice* physicalDevice = renderer->getPhysicalDevice();
 
 	// TODO: Move all this to before object creation.
@@ -124,14 +125,12 @@ void VulkanObject::draw(VkCommandBuffer buffer, uint32_t image_index) {
 	VkDeviceSize offsets[] = {0};
 	vkCmdBindVertexBuffers(buffer, 0, 1, vertexBuffers, offsets);
 	vkCmdBindIndexBuffer(buffer, indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+	
+	memcpy(uniformBuffersMapped[0], &model, sizeof(ModelMatrix));
 
 	// TODO: https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight
 	vkCmdBindDescriptorSets(buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->pipelineLayout, 0, 1, &transformDescriptorSet, 0, nullptr);
 	
 	pipeline->recordCommandBuffer(buffer, image_index);
 	vkCmdDrawIndexed(buffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
-}
-
-void VulkanObject::updateModel(ModelMatrix mat) {
-	memcpy(uniformBuffersMapped[0], &mat, sizeof(ModelMatrix));
 }
