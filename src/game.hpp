@@ -18,6 +18,4 @@ class Main : public IScene {
 	void preload() override;
 	void create() override;
 	void update() override;
-	// TODO: Make the scene handle this automatically.
-	void destroy() override;
 };

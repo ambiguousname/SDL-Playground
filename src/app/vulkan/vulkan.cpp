@@ -1,4 +1,5 @@
 #include "vulkan.hpp"
+#include "../errors.hpp"
 #include <SDL3/SDL_vulkan.h>
 #include <iostream>
 #include <set>

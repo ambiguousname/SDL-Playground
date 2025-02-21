@@ -1,4 +1,5 @@
 #include "mesh.hpp"
+#include "vulkan/mesh.hpp"
 
 Mesh::Mesh(App& app) : Object(app) {
 	if (context == VULKAN) {
@@ -30,11 +31,11 @@ Mesh::Mesh(App& app) : Object(app) {
 		VulkanPipelineInfo n = VulkanPipelineInfo(r, shaderInfo);
 		
 		// Move ownership into Vulkan so it gets destroyed when Vulkan is done with it.
-		inner = (void*)new VulkanObject(r, n);
+		inner = (void*)new VulkanMesh(r, n);
 
-		model = ((VulkanObject*)inner)->getModel();
+		position = ((VulkanMesh*)inner)->getModel();
 		
-		r->attachObject((VulkanObject*)inner);
+		r->attachObject((VulkanMesh*)inner);
 	} else {
 		throw AppError("Context does not support object rendering.");
 	}

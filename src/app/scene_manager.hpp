@@ -27,7 +27,6 @@ class SceneManager {
 	}
 
 	void destroy() {
-		activeScene->destroy();
 		delete activeScene;
 		activeScene = nullptr;
 	}

@@ -51,6 +51,7 @@ void VulkanRenderer::destroy() {
 	for (auto o : vulkanObjects) {
 		o->destroy();
 	}
+	vulkanObjects.clear();
 
 	vkDestroyDescriptorPool(device->ptr, globalDescriptorPool, nullptr);
 	vkDestroyDescriptorSetLayout(device->ptr, descriptorSetLayout, nullptr);

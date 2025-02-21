@@ -10,18 +10,15 @@ Camera::Camera(App& app) : Object(app) {
 		VulkanCamera* cam = new VulkanCamera(r, swapChain.extents.width, swapChain.extents.height);
 
 		inner = (void*)cam;
-	}
-}
-
-void Camera::_update() {
-	if(context == VULKAN) {
-		((VulkanCamera*)inner)->draw();
+		
+		r->attachObject(cam);
 	}
 }
 
 void Camera::_destroy() {
 	if (context == VULKAN) {
 		VulkanCamera* c = (VulkanCamera*) inner;
+		((VulkanRenderer*)renderer)->removeObject(c);
 		c->destroy();
 		delete c;
 	}

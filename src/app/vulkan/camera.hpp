@@ -2,8 +2,7 @@
 #include <glm/glm.hpp>
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
-#include <vulkan/vulkan.hpp>
-#include "renderer.hpp"
+#include "object.hpp"
 
 struct DisplayMatrices {
 	glm::mat4 projection;
@@ -12,9 +11,8 @@ struct DisplayMatrices {
 
 class VulkanRenderer;
 
-class VulkanCamera {
+class VulkanCamera : public VulkanObject {
 	protected:
-	const VulkanLogicDevice* device;
 	VkBuffer projectionBuffer;
 	VkDeviceMemory projectionBufferMemory;
 	void* projectionBufferMapped;
@@ -34,8 +32,8 @@ class VulkanCamera {
 	public:
 	VulkanCamera(VulkanRenderer* renderer, float w, float h, float fov=45.0f, float nearZ=0.1f, float farZ=100.0f);
 
-	void draw();
-	void destroy();
+	void draw(VkCommandBuffer buffer, uint32_t image_index) override;
+	void destroy() override;
 
 	void translate(glm::vec3 add);
 };

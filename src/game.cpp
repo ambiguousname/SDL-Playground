@@ -33,8 +33,3 @@ void Main::update() {
 	// SDL_RenderFillRect(app.renderer, &player);
 	// SDL_RenderPresent(app.renderer);
 }
-
-void Main::destroy() {
-	test.destroy();
-	cam.destroy();
-}

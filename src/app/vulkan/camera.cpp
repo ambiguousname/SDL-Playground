@@ -1,7 +1,8 @@
 #include "camera.hpp"
+#include "renderer.hpp"
 
 
-VulkanCamera::VulkanCamera(VulkanRenderer* renderer, float w, float h, float fov, float nearZ, float farZ) : device(renderer->getDevice()), w(w), h(h), fov(fov), nearZ(nearZ), farZ(farZ)  {
+VulkanCamera::VulkanCamera(VulkanRenderer* renderer, float w, float h, float fov, float nearZ, float farZ) : VulkanObject(renderer), w(w), h(h), fov(fov), nearZ(nearZ), farZ(farZ)  {
 	display.projection = glm::perspective(glm::radians(fov), w/h, nearZ, farZ);
 	display.view = glm::lookAt(position, position + forward, up);
 
@@ -40,7 +41,7 @@ void VulkanCamera::translate(glm::vec3 add)  {
 	glm::translate(display.view, -add);
 }
 
-void VulkanCamera::draw() {
+void VulkanCamera::draw(VkCommandBuffer buffer, uint32_t image_index) {
 	memcpy(projectionBufferMapped, &display, sizeof(DisplayMatrices));
 }
 
