@@ -43,6 +43,8 @@ App::~App() {
 
 void App::update() {
 	bool quit = false;
+	float ticks = SDL_GetTicks();
+	float nextTicks = ticks;
 	while(!quit) {
 		SDL_Event e;
 		while (SDL_PollEvent(&e)){
@@ -52,7 +54,9 @@ void App::update() {
 			}
 		}
 		SDL_PumpEvents();
-		sceneManager->update();
+		nextTicks = SDL_GetTicks();
+		sceneManager->update(nextTicks - ticks);
+		ticks = nextTicks;
 	}
 	sceneManager->destroy();
 	delete sceneManager;

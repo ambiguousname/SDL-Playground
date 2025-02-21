@@ -9,6 +9,6 @@ class IScene {
 	IScene(App& app) : app(app) {}
 	virtual void preload() {}
 	virtual void create() {}
-	virtual void update() {}
+	virtual void update(float delta) {}
 	virtual void destroy() {}
 };

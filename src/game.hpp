@@ -17,5 +17,5 @@ class Main : public IScene {
 	Main(App& app) : IScene(app) {}
 	void preload() override;
 	void create() override;
-	void update() override;
+	void update(float delta) override;
 };

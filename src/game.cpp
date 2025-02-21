@@ -20,11 +20,11 @@ void Main::create() {
 	cam = Camera(app);
 }
 
-void Main::update() {
+void Main::update(float delta) {
 	cam.update();
 	player_controller.update();
 	vec2 move_val = move_control->getValue().vec;
-	test.translate(vec3(move_val.x, move_val.y, 0) * 0.1f);
+	test.translate(vec3(move_val.x, move_val.y, 0) * delta/1000.0f);
 	// player.x += move_val.x;
 	// player.y += move_val.y;
 	// SDL_SetRenderDrawColor(app.renderer, 0, 0, 0, 0xff);

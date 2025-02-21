@@ -31,5 +31,5 @@ class SceneManager {
 		activeScene = nullptr;
 	}
 
-	void update();
+	void update(float delta);
 };

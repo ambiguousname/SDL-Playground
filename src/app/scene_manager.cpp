@@ -19,7 +19,7 @@ void SceneManager::initializeScene() {
 	app->update();
 }
 
-void SceneManager::update() {
+void SceneManager::update(float delta) {
 	if (!isActive) {
 		return;
 	}
@@ -29,6 +29,6 @@ void SceneManager::update() {
 		break;
 	}
 	if (activeScene != nullptr) {
-		activeScene->update();
+		activeScene->update(delta);
 	}
 }
