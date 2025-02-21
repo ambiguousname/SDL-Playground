@@ -18,7 +18,7 @@ VulkanCamera::VulkanCamera(VulkanRenderer* renderer, float w, float h, float fov
 		// TODO: https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight
 		bufferInfo.buffer = projectionBuffer;
 		bufferInfo.offset = 0;
-		bufferInfo.range = sizeof(DisplayMatrices) + sizeof(ModelMatrix);
+		bufferInfo.range = sizeof(DisplayMatrices);
 
 		VkWriteDescriptorSet descriptorWrite{};
 		descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;

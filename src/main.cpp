@@ -4,6 +4,6 @@
 
 int main(int argc, char* args[]) {
 	App app = App(AppConfig{"Game", VULKAN});
-	app.sceneManager.loadScene<Main>();
+	app.loadScene<Main>();
 	return 0;
 }

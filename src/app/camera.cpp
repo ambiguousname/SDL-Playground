@@ -1,9 +1,7 @@
 #include "camera.hpp"
 #include "vulkan/camera.hpp"
 
-Camera::Camera(App& app) {
-	context = app.getContext();
-	renderer = app.getRenderer();
+Camera::Camera(App& app) : Object(app) {
 	if (context == VULKAN) {
 		VulkanRenderer* r = (VulkanRenderer*)renderer;
 
@@ -15,13 +13,13 @@ Camera::Camera(App& app) {
 	}
 }
 
-void Camera::update() {
+void Camera::_update() {
 	if(context == VULKAN) {
 		((VulkanCamera*)inner)->draw();
 	}
 }
 
-void Camera::destroy() {
+void Camera::_destroy() {
 	if (context == VULKAN) {
 		VulkanCamera* c = (VulkanCamera*) inner;
 		c->destroy();

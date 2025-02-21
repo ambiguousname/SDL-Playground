@@ -1,6 +1,6 @@
 #pragma once
 #include "scene.hpp"
-#include "app.hpp"
+#include <type_traits>
 
 class App;
 
@@ -11,11 +11,12 @@ class SceneManager {
 	IScene* activeScene = nullptr;
 	App* app;
 
+	bool isActive = false;
+
 	void initializeScene();
 
 	public:
 	SceneManager(App* app);
-	~SceneManager();
 	template<Scene T>
 	void loadScene() {
 		if (activeScene != nullptr) {
@@ -23,6 +24,12 @@ class SceneManager {
 		}
 		activeScene = new T(*app);
 		initializeScene();
+	}
+
+	void destroy() {
+		activeScene->destroy();
+		delete activeScene;
+		activeScene = nullptr;
 	}
 
 	void update();

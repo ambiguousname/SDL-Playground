@@ -1,5 +1,4 @@
 #pragma once
-#include "app.hpp"
 
 class App;
 
@@ -11,4 +10,5 @@ class IScene {
 	virtual void preload() {}
 	virtual void create() {}
 	virtual void update() {}
+	virtual void destroy() {}
 };

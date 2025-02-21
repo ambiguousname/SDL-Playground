@@ -1,7 +1,7 @@
 #include "app.hpp"
 #include "errors.hpp"
 
-App::App(AppConfig config) : sceneManager(*new SceneManager(this)) {
+App::App(AppConfig config) : sceneManager(new SceneManager(this)) {
 	this->name = config.name;
 	this->context = config.context;
 
@@ -29,7 +29,6 @@ App::App(AppConfig config) : sceneManager(*new SceneManager(this)) {
 }
 
 App::~App() {
-	delete &sceneManager;
 	SDL_DestroyWindow(window);
 	switch(context) {
 		case HARDWARE_2D:
@@ -53,8 +52,11 @@ void App::update() {
 			}
 		}
 		SDL_PumpEvents();
-		sceneManager.update();
+		sceneManager->update();
 	}
+	sceneManager->destroy();
+	delete sceneManager;
+
 	// Destroy before destructors, since we want a certain order.
 	switch(context) {
 		case VULKAN:

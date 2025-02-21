@@ -3,6 +3,7 @@
 #include "../util/controls/controller.hpp"
 #include "vulkan/vulkan.hpp"
 #include "scene_manager.hpp"
+#include "scene.hpp"
 
 enum Context {
 	VULKAN,
@@ -11,7 +12,6 @@ enum Context {
 
 class VulkanWrapper;
 class VulkanRenderer;
-class SceneManager;
 
 struct AppConfig {
 	std::string name = "Game";
@@ -23,15 +23,21 @@ class App {
 	Context context;
 
 	friend class VulkanWrapper;
+	
+	SceneManager* sceneManager;
 
 	public:
 	std::string name;
-	SceneManager& sceneManager;
 
 	union {
 		SDL_Renderer* sdlRenderer;
 		VulkanWrapper* vulkanInstance;
 	};
+
+	template<Scene T>
+	void loadScene() {
+		sceneManager->loadScene<T>();
+	}
 	
 	const Context getContext() const { return context; }
 	void* getRenderer();

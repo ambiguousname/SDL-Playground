@@ -16,7 +16,7 @@ void Main::preload() {
 
 // TODO: Fix allocation, these currently do not destroy.
 void Main::create() {
-	test = Object(app);
+	test = Mesh(app);
 	cam = Camera(app);
 }
 
@@ -31,4 +31,9 @@ void Main::update() {
 	// SDL_SetRenderDrawColor(app.renderer, 0xff, 0, 0, 0xff);
 	// SDL_RenderFillRect(app.renderer, &player);
 	// SDL_RenderPresent(app.renderer);
+}
+
+void Main::destroy() {
+	test.destroy();
+	cam.destroy();
 }
