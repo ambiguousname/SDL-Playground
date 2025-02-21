@@ -33,7 +33,7 @@ Mesh::Mesh(App& app) : Object(app) {
 		// Move ownership into Vulkan so it gets destroyed when Vulkan is done with it.
 		inner = (void*)new VulkanMesh(r, n);
 
-		position = ((VulkanMesh*)inner)->getModel();
+		transform = ((VulkanMesh*)inner)->getModel();
 		
 		r->attachObject((VulkanMesh*)inner);
 	} else {

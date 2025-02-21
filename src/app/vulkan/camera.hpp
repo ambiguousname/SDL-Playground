@@ -35,5 +35,8 @@ class VulkanCamera : public VulkanObject {
 	void draw(VkCommandBuffer buffer, uint32_t image_index) override;
 	void destroy() override;
 
+	glm::mat4* getView() { return &display.view; }
+	glm::mat4* getProj() { return &display.projection; }
+
 	void translate(glm::vec3 add);
 };

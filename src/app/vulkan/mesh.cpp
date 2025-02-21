@@ -15,7 +15,7 @@ const std::vector<uint16_t> indices = {
 
 // TODO: Multiple created objects need to be made into one allocation.
 // Indices should also be merged into the same buffer as an index.
-VulkanMesh::VulkanMesh(VulkanRenderer* renderer, VulkanPipelineInfo creationInfo) : VulkanObject(renderer), description(creationInfo.getShaderDescription()), model(glm::mat4(1.0f)) {
+VulkanMesh::VulkanMesh(VulkanRenderer* renderer, VulkanPipelineInfo creationInfo) : VulkanObject(renderer), description(creationInfo.getShaderDescription()), model(glm::identity<glm::mat4>()) {
 
 	const VulkanPhysicalDevice* physicalDevice = renderer->getPhysicalDevice();
 

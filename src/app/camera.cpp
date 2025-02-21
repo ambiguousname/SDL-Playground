@@ -9,6 +9,9 @@ Camera::Camera(App& app) : Object(app) {
 
 		VulkanCamera* cam = new VulkanCamera(r, swapChain.extents.width, swapChain.extents.height);
 
+		view = cam->getView();
+		proj = cam->getProj();
+
 		inner = (void*)cam;
 		
 		r->attachObject(cam);

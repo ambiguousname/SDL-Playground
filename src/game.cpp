@@ -17,11 +17,11 @@ void Main::preload() {
 // TODO: Fix allocation, these currently do not destroy.
 void Main::create() {
 	test = Mesh(app);
+	test.setPosition(glm::vec3(-1.0f, 0, 0));
 	cam = Camera(app);
 }
 
 void Main::update(float delta) {
-	cam.update();
 	player_controller.update();
 	vec2 move_val = move_control->getValue().vec;
 	test.translate(vec3(move_val.x, move_val.y, 0) * delta/1000.0f);
